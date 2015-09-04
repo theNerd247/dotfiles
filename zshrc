@@ -1,5 +1,5 @@
 # Path to your oh-my-zsh installation.
-export ZSH=/home/noah/.oh-my-zsh
+export ZSH=$HOME/.oh-my-zsh
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
@@ -21,13 +21,13 @@ ZSH_THEME="bullet-train"
 # export UPDATE_ZSH_DAYS=13
 
 # Uncomment the following line to disable colors in ls.
-# DISABLE_LS_COLORS="true"
+DISABLE_LS_COLORS="true"
 
 # Uncomment the following line to disable auto-setting terminal title.
 # DISABLE_AUTO_TITLE="true"
 
 # Uncomment the following line to enable command auto-correction.
-# ENABLE_CORRECTION="true"
+ENABLE_CORRECTION="true"
 
 # Uncomment the following line to display red dots whilst waiting for completion.
 COMPLETION_WAITING_DOTS="true"
@@ -49,13 +49,21 @@ COMPLETION_WAITING_DOTS="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git vi-mode ubuntu ros custom)
+plugins=(git vi-mode archlinux custom ros)
 
 # User configuration
 
-export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
+
 export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
-export PATH="$PATH:/home/noah/scripts/"
+export PATH="$PATH:."
+export PATH="$PATH:/bin"
+export PATH="$PATH:$HOME/.gem/ruby/2.1.0/bin"
+export PATH="$PATH:$HOME/.gem/ruby/2.2.0/bin"
+export PATH="$PATH:$HOME/src/scripts"
+export PATH="$PATH:/opt/opencascade/bin"
+export PATH="$PATH:/sbin"
+export PATH="$PATH:/usr/lib/jvm/default/bin"
+
 export EDITOR=vim
 export GIT_EDITOR=$EDITOR
 
