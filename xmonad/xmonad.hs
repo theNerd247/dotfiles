@@ -26,6 +26,7 @@ import Control.Applicative ((<$>),(<*>))
 import Data.Maybe (listToMaybe, fromJust)
 
 modmask = mod4Mask
+home = "/home/noah/"
 
 -- default applications
 term = "urxvt"
