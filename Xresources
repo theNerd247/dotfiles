@@ -1,0 +1,42 @@
+!Xresources file
+!
+#include "/home/noah/.dotfiles/urxvt/solarized.theme" 
+
+!----START URXVT ---------------------
+! colors
+URxvt.intensityStyles: false
+URxvt.dynamicColors: on
+URxvt.termName: rxvt-256color
+!URxvt.foreground: #eeeeee
+!URxvt.background: [100]#303030
+!URxvt.tintColor: #ffffff
+!URxvt.highlightColor: white
+!URxvt.highlightTextColor: black 
+!URxvt.cursorColor: white
+!URxvt.cursorColor2: black
+
+!URxvt.depth: 32
+!URxvt.transparent: yes
+!URxvt.shading: 20
+
+! scrollbar 
+URxvt.saveLines: 1000
+URxvt.scrollBar: false
+URxvt.scrollBar_right: false
+URxvt.scrollBar_floating: true
+URxvt.scrollWithBuffer: true
+URxvt.jumpscroll: true
+
+! font
+URxvt.font: xft:DroidSansMonoforPowerline:size=9
+! This is a nice font...might use it later
+!URxvt.font: xft:SourceCodePro:size=9
+
+! application icon
+URxvt.iconFile: /usr/share/icons/kAwOkenDark/clear/128x128/apps/terminal.png
+
+URxvt.perl-ext-common: default,matcher
+URxvt.url-launcher: /usr/bin/firefox
+URxvt.matcher.button: 1
+
+!-----END URXVT ----------------------
