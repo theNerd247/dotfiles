@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# move any new mail into the old mail so to keep the pop up from happening
+mv ~/mail/new/* ~/mail/cur/
+
+cd ~/temp
+exec urxvt -e "mutt"

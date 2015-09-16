@@ -35,7 +35,7 @@ inTerm = ("exec urxvt -e " ++)
 webbrowser = "firefox"
 
 -- keyboard applications
-scripts = home ++ "src/scripts/xmonad/"
+scripts = home ++ ".dotfiles/xmonad/scripts/"
 
 -- remove the ncmpcpp toggle command as it's currently broken
 toggleSound = "amixer set Master toggle"
