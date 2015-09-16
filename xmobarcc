@@ -5,11 +5,11 @@ Config { font = "-*-Fixed-Bold-R-Normal-*-12-*-*-*-*-*-*-*"
        , commands = [ 
                       Run Date "%a %b %_d %l:%M" "date" 10
                     , Run StdinReader
-                    , Run Com "/home/noah/src/scripts/xmobar/xmvol.sh" [] "volue" 10
-                    , Run Com "/home/noah/src/scripts/xmobar/xmbatt.sh" [] "batt" 10
-										, Run Com "/home/noah/src/scripts/xmobar/xmtodo.sh" [] "todo" 15
-										, Run Com "/home/noah/src/scripts/xmobar/xmpacman.sh" [] "pac" 500
-										, Run Com "/home/noah/src/scripts/xmobar/xmchkmail.sh" [] "mail" 500
+                    , Run Com "/home/nharvey7/src/scripts/xmobar/xmvol.sh" [] "volue" 10
+                    , Run Com "/home/nharvey7/src/scripts/xmobar/xmbatt.sh" [] "batt" 10
+										, Run Com "/home/nharvey7/src/scripts/xmobar/xmtodo.sh" [] "todo" 15
+										, Run Com "/home/nharvey7/src/scripts/xmobar/xmpacman.sh" [] "pac" 500
+										, Run Com "/home/nharvey7/src/scripts/xmobar/xmchkmail.sh" [] "mail" 500
                     ]
        , sepChar = "%"
        , alignSep = "}{"

@@ -26,6 +26,7 @@ import Control.Applicative ((<$>),(<*>))
 import Data.Maybe (listToMaybe, fromJust)
 
 modmask = mod4Mask
+home = "/home/nharvey7/"
 
 -- default applications
 term = "urxvt"
@@ -34,7 +35,7 @@ inTerm = ("exec urxvt -e " ++)
 webbrowser = "firefox"
 
 -- keyboard applications
-scripts = "/home/noah/src/scripts/xmonad/"
+scripts = home ++ "src/scripts/xmonad/"
 
 -- remove the ncmpcpp toggle command as it's currently broken
 toggleSound = "amixer set Master toggle"
@@ -145,8 +146,7 @@ myManageHooks =
 
 windowToWorkSpace = composeAll
 	[ 
-		className =? "URxvt" --> doShift "term"
-		,className =? "Firefox" --> doShift "web"
+		className =? "Firefox" --> doShift "web"
 		,className =? "Gimp" --> doShift "media"
     ,className =? "Evince" --> doShift "office"
 	]
@@ -165,8 +165,7 @@ myEventHooks =
 	<+> (handleEventHook defaultConfig)
 	
 main = do
-	spawnPipe "/home/noah/.xmonad/autostart.sh"
-	xmproc <- spawnPipe "/usr/bin/xmobar -o /home/noah/.xmobarcc"
+	xmproc <- spawnPipe ("/usr/bin/xmobar -o" ++  home ++ ".xmobarcc")
 	xmonad $ defaultConfig
 		{ manageHook = myManageHooks
 		, handleEventHook = myEventHooks
