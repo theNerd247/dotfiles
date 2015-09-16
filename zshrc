@@ -21,7 +21,7 @@ ZSH_THEME="bullet-train"
 # export UPDATE_ZSH_DAYS=13
 
 # Uncomment the following line to disable colors in ls.
-DISABLE_LS_COLORS="false"
+#DISABLE_LS_COLORS="true"
 
 # Uncomment the following line to disable auto-setting terminal title.
 # DISABLE_AUTO_TITLE="true"
@@ -52,7 +52,6 @@ COMPLETION_WAITING_DOTS="true"
 plugins=(git vi-mode ubuntu custom ros)
 
 # User configuration
-
 
 export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
 export PATH="$PATH:."
