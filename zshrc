@@ -55,6 +55,7 @@ plugins=(git vi-mode ubuntu custom ros)
 
 export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
 export PATH="$PATH:."
+export PATH="$PATH:/home/nharvey7/.cabal/bin/"
 export PATH="$PATH:/bin"
 export PATH="$PATH:$HOME/.gem/ruby/2.1.0/bin"
 export PATH="$PATH:$HOME/.gem/ruby/2.2.0/bin"
