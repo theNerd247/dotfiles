@@ -48,6 +48,8 @@ mail = scripts ++ "openMail"
 lockPc = "xscreensaver-command -lock"
 network = inTerm "wicd-curses"
 ranger = inTerm "ranger"
+bckLightDown = "xbacklight -set 20"
+bckLightUp = "xbacklight -set 50"
 
 -- TODO: make this move the given program to the desired workspace
 -- executes the given shell command then goes to the given workspace
@@ -80,6 +82,8 @@ customkeys =
 	, ("M-M1-l", spawn lockPc)
 	, ("M-n", spawn network)
 	, ("M-f", spawn ranger)
+  , ("M-<F2>", spawn bckLightDown)
+  , ("M-<F3>", spawn bckLightUp)
 	]
 
 {-hideAllWindows = hide SS.allWindows-}
