@@ -49,7 +49,7 @@ COMPLETION_WAITING_DOTS="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git vi-mode ubuntu custom ros gazebo)
+plugins=(git vi-mode ubuntu custom)
 
 # User configuration
 
@@ -70,11 +70,11 @@ export GIT_EDITOR=$EDITOR
 # list of catkin_workspaces which is required by the ros plugin
 export ROS_DISTRO="indigo"
 
-CATKIN_WS=("$HOME/src/SensingAndGrasping/catkin_ws")
-export CATKIN_WS
+#CATKIN_WS=("$HOME/src/SensingAndGrasping/catkin_ws")
+#export CATKIN_WS
 
-GAZEBO_PROJECTS=()
-export GAZEBO_PROJECTS
+#GAZEBO_PROJECTS=()
+#export GAZEBO_PROJECTS
 
 source $ZSH/oh-my-zsh.sh
 
