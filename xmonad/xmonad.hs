@@ -174,18 +174,18 @@ main = do
   spawnPipe "/home/noah/.xmonad/autostart.sh"
   xmproc <- spawnPipe "/usr/bin/xmobar -o /home/noah/.xmobarcc"
   xmonad $ defaultConfig
-  { manageHook = myManageHooks
-  , handleEventHook = myEventHooks
-  , layoutHook = myLayoutHooks
-  , modMask = modmask
-  , terminal = term
-  , normalBorderColor = unfocusBorder
-  , focusedBorderColor = focusBorder
-  , workspaces = myWorkspaces
-  , logHook = dynamicLogWithPP xmobarPP
-    { ppOutput = hPutStrLn xmproc
-    , ppTitle = xmobarColor "green" "" . shorten 50
+    { manageHook = myManageHooks
+    , handleEventHook = myEventHooks
+    , layoutHook = myLayoutHooks
+    , modMask = modmask
+    , terminal = term
+    , normalBorderColor = unfocusBorder
+    , focusedBorderColor = focusBorder
+    , workspaces = myWorkspaces
+    , logHook = dynamicLogWithPP xmobarPP
+        { ppOutput = hPutStrLn xmproc
+        , ppTitle = xmobarColor "green" "" . shorten 50
+        }
     }
-  }
-  `EZ.additionalKeysP` customkeys
-  `EZ.additionalMouseBindings` customMouse
+    `EZ.additionalKeysP` customkeys
+    `EZ.additionalMouseBindings` customMouse
