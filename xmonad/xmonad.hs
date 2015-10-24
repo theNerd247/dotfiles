@@ -38,11 +38,11 @@ webbrowser = "firefox"
 scripts = home ++ ".dotfiles/xmonad/scripts/"
 
 -- remove the ncmpcpp toggle command as it's currently broken
-toggleSound = "amixer set Master toggle"
+toggleSound = "amixer -c 1 set Master toggle"
 -- remove the ncmpcpp toggle command as it's currently broken
 toggleMusic = ""
-volUp = "amixer set Master 5%+"
-volDown = "amixer set Master 5%-"
+volUp = "amixer -c 1 set Master 5%+"
+volDown = "amixer -c 1 set Master 5%-"
 musicPlayer =  scripts ++ "openNCMPCPP"
 mail = scripts ++ "openMail"
 lockPc = "xscreensaver-command -lock"
@@ -50,6 +50,7 @@ network = inTerm "wicd-curses"
 ranger = inTerm "ranger"
 bckLightDown = "xbacklight -set 20"
 bckLightUp = "xbacklight -set 50"
+runXmobar = "~/.cabal/bin/xmobar ~/.xmobarcc"
 
 -- TODO: make this move the given program to the desired workspace
 -- executes the given shell command then goes to the given workspace
@@ -89,9 +90,9 @@ customkeys =
 {-hideAllWindows = hide SS.allWindows-}
 
 gestures = M.fromList 
-[([D], (\w -> withAll hide))
-,([U], (\w -> withAll reveal))
-]
+  [([D], (\w -> withAll hide))
+  ,([U], (\w -> withAll reveal))
+  ]
 
 -- button4 is scrollup
 customMouse = 
@@ -106,9 +107,10 @@ unfocusBorder = "#303030"
 
 -- default Tall config 
 tiled = Tall 
-{tallNMaster = nm
-,tallRatioIncrement = inc
-,tallRatio = rt}
+  {tallNMaster = nm
+  ,tallRatioIncrement = inc
+  ,tallRatio = rt
+  }
   where 
     nm = 1
     inc = 3/100
@@ -128,10 +130,10 @@ layouts = myTabbed
 
 -- layout hooks 
 myLayoutHooks = avoidStruts 
-$ smartBorders
-$ fullscreenFull 
-$ fullscreenFloat
-$ layouts
+  $ smartBorders
+  $ fullscreenFull 
+  $ fullscreenFloat
+  $ layouts
 
 -- workspace details
 myWorkspaces = (custom ++) $ show <$> drop n [1..9]
@@ -149,20 +151,19 @@ myManageHooks =
   <+> manageHook defaultConfig
 
 windowToWorkSpace = composeAll
-[ 
-className =? "URxvt" --> doShift "term"
-,className =? "Firefox" --> doShift "web"
-,className =? "Gimp" --> doShift "media"
-,className =? "Evince" --> doShift "office"
-]
+  [ 
+    className =? "Firefox" --> doShift "web"
+    ,className =? "Gimp" --> doShift "media"
+    ,className =? "Evince" --> doShift "office"
+  ]
 
 {-fadeHooks = composeAll -}
-{-[-}
-{-className =? "URxvt" --> fadeTo 0-}
-{-]-}
+  {-[-}
+    {-className =? "URxvt" --> fadeTo 0-}
+  {-]-}
 
 helpers = composeOne
-[isFullscreen -?> doFullFloat]
+  [isFullscreen -?> doFullFloat]
 
 -- X event hooks
 myEventHooks = 
@@ -182,9 +183,9 @@ main = do
   , focusedBorderColor = focusBorder
   , workspaces = myWorkspaces
   , logHook = dynamicLogWithPP xmobarPP
-  { ppOutput = hPutStrLn xmproc
-  , ppTitle = xmobarColor "green" "" . shorten 50
-  }
+    { ppOutput = hPutStrLn xmproc
+    , ppTitle = xmobarColor "green" "" . shorten 50
+    }
   }
   `EZ.additionalKeysP` customkeys
   `EZ.additionalMouseBindings` customMouse
