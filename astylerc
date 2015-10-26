@@ -1,0 +1,12 @@
+--style=allman
+--mode=c 
+--max-code-length=80
+--close-templates
+--remove-brackets
+--align-reference=type
+--align-pointer=type
+--indent=spaces=2
+--unpad-paren
+--indent-classes
+--indent-modifiers
+--indent-switches
