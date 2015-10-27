@@ -26,7 +26,7 @@ import Control.Applicative ((<$>),(<*>))
 import Data.Maybe (listToMaybe, fromJust)
 
 modmask = mod4Mask
-home = "/home/noah/"
+home = "/home/nharvey7/"
 
 -- default applications
 term = "urxvt"
@@ -41,15 +41,13 @@ scripts = home ++ ".dotfiles/xmonad/scripts/"
 toggleSound = "amixer -c 1 set Master toggle"
 -- remove the ncmpcpp toggle command as it's currently broken
 toggleMusic = ""
-volUp = "amixer set Master 5%+"
-volDown = "amixer set Master 5%-"
+volUp = "amixer -c 1 set Master 5%+"
+volDown = "amixer -c 1 set Master 5%-"
 musicPlayer =  scripts ++ "openNCMPCPP"
 mail = scripts ++ "openMail"
 lockPc = "xscreensaver-command -lock"
 network = inTerm "wicd-curses"
 ranger = inTerm "ranger"
-bckLightDown = "xbacklight -set 20"
-bckLightUp = "xbacklight -set 50"
 runXmobar = "~/.cabal/bin/xmobar ~/.xmobarcc"
 
 -- TODO: make this move the given program to the desired workspace
@@ -83,8 +81,12 @@ customkeys =
   , ("M-M1-l", spawn lockPc)
   , ("M-n", spawn network)
   , ("M-f", spawn ranger)
-  , ("M-<F2>", spawn bckLightDown)
-  , ("M-<F3>", spawn bckLightUp)
+  , ("<XF86MonBrightnessDown>", spawn "xbacklight -5")
+  , ("<XF86MonBrightnessUp>", spawn "xbacklight +5")
+  , ("M-<F4>", spawn "xbacklight -set 20")
+  , ("M-<F5>", spawn "xbacklight -set 60")
+  , ("<XF86AudioRaiseVolume>", spawn volUp)
+  , ("<XF86AudioLowerVolume>", spawn volDown)
   ]
 
 {-hideAllWindows = hide SS.allWindows-}
@@ -109,8 +111,7 @@ unfocusBorder = "#303030"
 tiled = Tall 
   {tallNMaster = nm
   ,tallRatioIncrement = inc
-  ,tallRatio = rt
-  }
+  ,tallRatio = rt}
   where 
     nm = 1
     inc = 3/100
@@ -169,10 +170,9 @@ helpers = composeOne
 myEventHooks = 
   fullscreenEventHook
   <+> (handleEventHook defaultConfig)
-
+  
 main = do
-  spawnPipe "/home/noah/.xmonad/autostart.sh"
-  xmproc <- spawnPipe "/usr/bin/xmobar -o /home/noah/.xmobarcc"
+  xmproc <- spawnPipe runXmobar
   xmonad $ defaultConfig
     { manageHook = myManageHooks
     , handleEventHook = myEventHooks
@@ -183,9 +183,9 @@ main = do
     , focusedBorderColor = focusBorder
     , workspaces = myWorkspaces
     , logHook = dynamicLogWithPP xmobarPP
-        { ppOutput = hPutStrLn xmproc
-        , ppTitle = xmobarColor "green" "" . shorten 50
-        }
+            { ppOutput = hPutStrLn xmproc
+            , ppTitle = xmobarColor "green" "" . shorten 50
+            }
     }
     `EZ.additionalKeysP` customkeys
     `EZ.additionalMouseBindings` customMouse
