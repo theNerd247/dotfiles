@@ -11,21 +11,37 @@ Portability : POSIX
 
 module XMonad.Hooks.WorkspaceBacklight
 (
-  setBacklight
-  ,setwsBacklight
-  ,incBrightness
-  ,decBrightness
+   Backlights(..)
+  ,Brightness(..)
+  ,setWSBacklight
 )
 where
 
--- sets the backlight of the computer
-setBacklight = undefined
+import qualified Xmonad.Operations as XO
+import qualified Xmonad.Stackset   as XS
+import qualified Xmonad.Core       as XC
+import qualified Data.Map          as M
 
--- sets the backlight value for the given workspace
-setwsBacklight = undefined
+type Brightness = Int
 
--- keybinding to increase the brightness for the current workspace
-incBrightness = undefined
+type Backlights i = M.Map i Brightness 
 
--- keybinding to decrease the brightness for the current workspace
-decBrightness = undefined
+type WSBacklightT i a = StateT (Backlights i) X a
+
+-- | Sets the backlight of the screen
+setScreenBacklight :: Brightness -> X ()
+setScreenBacklight = XC.spawn . ("xbacklight -set " ++) . show
+
+-- | Sets the screen brightness given the workspace id
+setWSBacklight :: (Ord i) => i -> WSBacklightT i ()
+setWSBacklight w = get >>= fmap setbl
+  where
+    setbl bs
+      | (Just b) <- M.lookup w bs = setScreenBacklight b
+      | otherwise = return ()
+
+-- | Adjusts the stored backlight and sets the screens backlight
+adjustWSBacklight :: (Ord i) => i -> Brightness -> WSBacklightT i ()
+adjustWSBacklight w b = modify (M.adjust (\_ -> b) w) >>= setWSBacklight w
+
+runBacklight
