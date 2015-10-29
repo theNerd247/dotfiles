@@ -13,51 +13,46 @@ Portability : POSIX
 
 module XMonad.Hooks.WorkspaceBacklight
 (
-   Backlights(..)
   ,Brightness(..)
   ,setWSBacklight
 )
 where
 
-import qualified Xmonad.Operations as XO
 import qualified Xmonad.Core       as XC
-import qualified Xmonad.Util.ExtensibleState as XE
+import qualified Xmonad.Util.ExtensibleState as XS
 import qualified Data.Map          as M
-import Control.Monad.State (StateT(..), modify, get)
 
 type Brightness = Int
 
-type Backlights i = M.Map i Brightness
+type BacklightState i = M.Map i Brightness
+
+type BacklightConf = BacklightState WorkspaceId
 
 -- | Sets the backlight of the screen
 setScreenBacklight :: Brightness -> X ()
 setScreenBacklight = XC.spawn . ("xbacklight -set " ++) . show
 
 -- | Sets the screen brightness given the workspace id
-setWSBacklight :: (Ord i) => i -> WSBacklightS i ()
-setWSBacklight w = get >>= fmap setbl
-  where
-    setbl bs
-      | (Just b) <- M.lookup w bs = setScreenBacklight b
-      | otherwise = return ()
+setWSBacklight :: (Ord i) => i -> X ()
+setWSBacklight w = do
+      bs <- XS.get :: X (BacklightState i)
+      let setbs
+        | (Just b) <- M.lookup w bs = setScreenBacklight b
+        | otherwise = return ()
+      in setbs
 
--- | Adjusts the stored backlight and sets the screens backlight
-adjustWSBacklight :: (Ord i) => i -> Brightness -> WSBacklightS i ()
-adjustWSBacklight w b = 
-  modify (M.adjust (\_ -> b) w) 
-  setWSBacklight w
-
--- | Runs an action in the WSBacklightS monad by fetching the config from the X
--- state and stores the resulting config in the X state
-
-runWSBacklightAction :: WSBacklightS i () -> X ()
-runWSBacklightAction f = do 
-  conf <- (XS.get :: X (Backlights i) )
-  s <- execStateT f conf
-  put s
+-- | Binds the screen's brightness to the current workspace
+adjustWSBacklight :: (Ord i) => i -> X()
+adjustWSBacklight w = do
+  b <- getBrightness
+  XS.modify $ M.adjust (\_ -> b) w
 
 enableBacklightControl :: WorkspaceId -> X ()
-enableBacklightControl i = runWSBacklightAction $ modify $ M.insert 50 i
+enableBacklightControl i = XS.modify $ M.insert 50 i
 
 disableBacklightControl :: WorkspaceId -> X ()
-disableBacklightControl i = runWSBacklightAction $ modify $ M.delete i
+disableBacklightControl i = XS.modify $ M.delete i
+
+-- | Gets the current screen's brightness
+getBrightness :: X Brightness
+getBrightness = undefined
