@@ -21,6 +21,7 @@ where
 import qualified Xmonad.Core       as XC
 import qualified Xmonad.Util.ExtensibleState as XS
 import qualified Data.Map          as M
+import System.Process
 
 type Brightness = Int
 
@@ -55,4 +56,4 @@ disableBacklightControl i = XS.modify $ M.delete i
 
 -- | Gets the current screen's brightness
 getBrightness :: X Brightness
-getBrightness = undefined
+getBrightness = XC.io $ readProcess "xbacklight" [] []
