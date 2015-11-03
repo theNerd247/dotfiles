@@ -47,7 +47,7 @@ instance (Typeable s, Typeable i) => ExtensionClass (BacklightState s i)
 setScreenBacklight :: (Show s) => s ->  Brightness -> X ()
 setScreenBacklight s b = spawn $ 
   "xbacklight " 
-  ++ "-display " ++ (show s)
+  {-++ "-display 0 " ++ (show s)-}
   ++ "-set " ++ (show b)
 
 -- | returns the current screen and its workspace id (if the workspace id
@@ -81,12 +81,15 @@ adjustWSBacklight db = do
   b <- getBrightness
   maybe 
     (return ()) 
-    (\k -> XS.modify (M.adjust (\_ -> db+b) k))
+    (\k -> XS.modify (M.adjust (\_ -> min 100 $ max 0 $ db+b) k))
     $ sw
+  setBacklight
 
 -- | Gets the current screen's brightness
 getBrightness :: X Brightness
-getBrightness = io $ readProcess "xbacklight" [] [] >>= return . read
+getBrightness = io $
+  readProcess "xbacklight" [] []
+  >>= return . truncate . (read :: String -> Double) 
 
 setDefaultScreenBrightness :: ScreenId -> [(WorkspaceId,Brightness)] -> BacklightConf
 setDefaultScreenBrightness sid = M.fromList . fmap (\(w,b) -> ((sid,w),b))

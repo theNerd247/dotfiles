@@ -85,8 +85,8 @@ customkeys =
   , ("M-M1-l", spawn lockPc)
   , ("M-n", spawn network)
   , ("M-f", spawn ranger)
-  , ("M-<F2>", spawn bckLightDown)
-  , ("M-<F3>", spawn bckLightUp)
+  , ("M-<F2>", adjustWSBacklight 5)
+  , ("M-<F3>", adjustWSBacklight (-5))
   ]
 
 backlightConf :: BacklightConf
