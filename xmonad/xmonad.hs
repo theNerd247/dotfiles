@@ -25,6 +25,8 @@ import qualified XMonad.Util.EZConfig as EZ
 import Control.Applicative ((<$>),(<*>))
 import Data.Maybe (listToMaybe, fromJust)
 
+import XMonad.Actions.WorkspaceBacklight
+
 modmask = mod4Mask
 home = "/home/noah/"
 
@@ -38,7 +40,7 @@ webbrowser = "firefox"
 scripts = home ++ ".dotfiles/xmonad/scripts/"
 
 -- remove the ncmpcpp toggle command as it's currently broken
-toggleSound = "amixer -c 1 set Master toggle"
+toggleSound = "amixer set Master toggle"
 -- remove the ncmpcpp toggle command as it's currently broken
 toggleMusic = ""
 volUp = "amixer set Master 5%+"
@@ -86,6 +88,16 @@ customkeys =
   , ("M-<F2>", spawn bckLightDown)
   , ("M-<F3>", spawn bckLightUp)
   ]
+
+backlightConf :: BacklightConf
+backlightConf = setDefaultScreenBrightness (S 0) $
+  [
+    ("web",20)
+    ,("term",60)
+  ]
+  ++ [(w,50) | w <- (show <$> [3..9])]
+
+backlightKeys = [(modmask,ks) | ks <- [xK_1 .. xK_9]]
 
 {-hideAllWindows = hide SS.allWindows-}
 
@@ -157,11 +169,6 @@ windowToWorkSpace = composeAll
     ,className =? "Evince" --> doShift "office"
   ]
 
-{-fadeHooks = composeAll -}
-  {-[-}
-    {-className =? "URxvt" --> fadeTo 0-}
-  {-]-}
-
 helpers = composeOne
   [isFullscreen -?> doFullFloat]
 
@@ -170,11 +177,15 @@ myEventHooks =
   fullscreenEventHook
   <+> (handleEventHook defaultConfig)
 
+myStartupHooks = 
+  enableWSBrightnessControl backlightConf
+
 main = do
-  spawnPipe "/home/noah/.xmonad/autostart.sh"
   xmproc <- spawnPipe "/usr/bin/xmobar -o /home/noah/.xmobarcc"
   xmonad $ defaultConfig
-    { manageHook = myManageHooks
+    { 
+      startupHook = myStartupHooks
+    , manageHook = myManageHooks
     , handleEventHook = myEventHooks
     , layoutHook = myLayoutHooks
     , modMask = modmask
@@ -189,3 +200,4 @@ main = do
     }
     `EZ.additionalKeysP` customkeys
     `EZ.additionalMouseBindings` customMouse
+    `enableWSKeys` backlightKeys

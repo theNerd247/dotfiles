@@ -19,6 +19,9 @@ module XMonad.Actions.WorkspaceBacklight
   ,BacklightConf(..)
   ,adjustWSBacklight
   ,setBacklight
+  ,setDefaultScreenBrightness
+  ,enableWSBrightnessControl
+  ,enableWSKeys
 )
 where
 
@@ -85,15 +88,14 @@ adjustWSBacklight db = do
 getBrightness :: X Brightness
 getBrightness = io $ readProcess "xbacklight" [] [] >>= return . read
 
-enableScreenBrightness :: ScreenId -> [(WorkspaceId,Brightness)] -> BacklightConf
-enableScreenBrightness sid = M.fromList . fmap (\(w,b) -> ((sid,w),b))
+setDefaultScreenBrightness :: ScreenId -> [(WorkspaceId,Brightness)] -> BacklightConf
+setDefaultScreenBrightness sid = M.fromList . fmap (\(w,b) -> ((sid,w),b))
 
 -- | enables backlight control
 enableWSBrightnessControl :: BacklightConf -> X ()
 enableWSBrightnessControl = XS.put 
 
--- | configures the workspace switching keybindings and the FX86 buttons to
--- enable dynamic control of the screen brightness
+-- | Appends to the actions of the given keys to set the screen brightness.
 enableWSKeys :: XConfig l -> [(ButtonMask,KeySym)] -> XConfig l
 enableWSKeys xconf ks =
   let
