@@ -77,13 +77,14 @@ setBacklight = do
 -- should increase the backlight value to this function.
 adjustWSBacklight :: Brightness -> X()
 adjustWSBacklight db = do
-  sw <- withWindowSet getScreenAndWSId
-  b <- getBrightness
-  maybe 
-    (return ()) 
-    (\k -> XS.modify (M.adjust (\_ -> min 100 $ max 0 $ db+b) k))
-    $ sw
-  setBacklight
+  {-sw <- withWindowSet getScreenAndWSId-}
+  {-b <- getBrightness-}
+  spawn $ "exec urxvt -e echo " ++ (show db) ++ " >> /tmp/xmonad.out" -- ++ (show sw)
+  {-maybe -}
+    {-(return ()) -}
+    {-(\k -> XS.modify (M.adjust (\_ -> min 100 $ max 0 $ db+b) k) >> spawn "urxvt")-}
+    {-$ sw-}
+  {-setBacklight-}
 
 -- | Gets the current screen's brightness
 getBrightness :: X Brightness
