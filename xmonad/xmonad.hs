@@ -25,7 +25,7 @@ import qualified XMonad.Util.EZConfig as EZ
 import Control.Applicative ((<$>),(<*>))
 import Data.Maybe (listToMaybe, fromJust)
 
-import XMonad.Actions.WorkspaceBacklight
+{-import XMonad.Actions.WorkspaceBacklight-}
 
 modmask = mod4Mask
 home = "/home/noah/"
@@ -85,20 +85,20 @@ customkeys =
   , ("M-M1-l", spawn lockPc)
   , ("M-n", spawn network)
   , ("M-f", spawn ranger)
-  , ("M-o", adjustWSBacklight 5)
-  , ("M-S-o", adjustWSBacklight (-5))
+  {-, ("M-o", adjustWSBacklight 5)-}
+  {-, ("M-S-o", adjustWSBacklight (-5))-}
   {-, ("M-<F3>", adjustWSBacklight (-5))-}
   ]
 
-backlightConf :: BacklightConf
-backlightConf = setDefaultScreenBrightness (S 0) $
-  [
-    ("web",20)
-    ,("term",60)
-  ]
-  ++ [(w,50) | w <- (show <$> [3..9])]
+{-backlightConf :: BacklightConf-}
+{-backlightConf = setDefaultScreenBrightness (S 0) $-}
+  {-[-}
+    {-("web",20)-}
+    {-,("term",60)-}
+  {-]-}
+  {-++ [(w,50) | w <- (show <$> [3..9])]-}
 
-backlightKeys = [(modmask,ks) | ks <- [xK_1 .. xK_9]]
+{-backlightKeys = [(modmask,ks) | ks <- [xK_1 .. xK_9]]-}
 
 {-hideAllWindows = hide SS.allWindows-}
 
@@ -178,15 +178,15 @@ myEventHooks =
   fullscreenEventHook
   <+> (handleEventHook defaultConfig)
 
-myStartupHooks = 
-  enableWSBrightnessControl backlightConf
+{-myStartupHooks = -}
+  {-enableWSBrightnessControl backlightConf-}
 
 main = do
   xmproc <- spawnPipe "/usr/bin/xmobar -o /home/noah/.xmobarcc"
   xmonad $ defaultConfig
     { 
-      startupHook = myStartupHooks
-    , manageHook = myManageHooks
+      {-startupHook = myStartupHooks-}
+     manageHook = myManageHooks
     , handleEventHook = myEventHooks
     , layoutHook = myLayoutHooks
     , modMask = modmask
