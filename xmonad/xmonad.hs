@@ -42,7 +42,7 @@ scripts = home ++ ".dotfiles/xmonad/scripts/"
 -- remove the ncmpcpp toggle command as it's currently broken
 toggleSound = "amixer set Master toggle"
 -- remove the ncmpcpp toggle command as it's currently broken
-toggleMusic = ""
+toggleMusic = "mpc toggle"
 volUp = "amixer set Master 5%+"
 volDown = "amixer set Master 5%-"
 musicPlayer =  scripts ++ "openNCMPCPP"
@@ -69,7 +69,7 @@ getScreenId s ws = listToMaybe [sid | SS.Screen i sid _ <- SS.screens ws, (SS.ta
 -- custom keyboard mappings
 customkeys :: [(String,X ())]
 customkeys =
-  [ ("M-a", spawn toggleSound)
+  [ ("M-a", spawn toggleSound >> spawn toggleMusic)
   , ("M-S-a", spawn toggleMusic)
   , ("M-v", spawn volUp)
   , ("M-S-v", spawn volDown)
@@ -86,6 +86,7 @@ customkeys =
   , ("M-n", spawn network)
   , ("M-f", spawn ranger)
   , ("M-o", adjustWSBacklight 5)
+  , ("M-S-o", adjustWSBacklight (-5))
   {-, ("M-<F3>", adjustWSBacklight (-5))-}
   ]
 
@@ -200,4 +201,4 @@ main = do
     }
     `EZ.additionalKeysP` customkeys
     `EZ.additionalMouseBindings` customMouse
-    `enableWSKeys` backlightKeys
+    {-`enableWSKeys` backlightKeys-}
