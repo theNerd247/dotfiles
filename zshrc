@@ -63,6 +63,7 @@ export PATH="$PATH:$HOME/src/scripts"
 export PATH="$PATH:/opt/opencascade/bin"
 export PATH="$PATH:/sbin"
 export PATH="$PATH:/usr/lib/jvm/default/bin"
+export _JAVA_AWT_WM_NONREPARENTING=1
 
 export EDITOR=vim
 export GIT_EDITOR=$EDITOR
