@@ -13,7 +13,7 @@ function lnk()
 		instPath="$(getInstPath $2)"
 	fi
 
-	ln -s -T "$HOME/.dotfiles/$1" "$instPath"
+	ln -s -i -T "$HOME/.dotfiles/$1" "$instPath"
 }
 
 function inst()
