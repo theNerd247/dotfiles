@@ -50,8 +50,8 @@ mail = scripts ++ "openMail"
 lockPc = "xscreensaver-command -lock"
 network = inTerm "wicd-curses"
 ranger = inTerm "ranger"
-bckLightDown = "xbacklight -set 20"
-bckLightUp = "xbacklight -set 50"
+bckLightDown = "xbacklight -dec 5"
+bckLightUp = "xbacklight -inc 5"
 runXmobar = "~/.cabal/bin/xmobar ~/.xmobarcc"
 
 -- TODO: make this move the given program to the desired workspace
@@ -85,6 +85,10 @@ customkeys =
   , ("M-M1-l", spawn lockPc)
   , ("M-n", spawn network)
   , ("M-f", spawn ranger)
+  , ("<XF86MonBrightnessUp>", spawn bckLightUp)
+  , ("<XF86MonBrightnessDown>", spawn bckLightDown)
+  , ("M-<F3>", spawn "xbacklight -set 2")
+  , ("M-<F4>", spawn "xbacklight -set 30")
   {-, ("M-o", adjustWSBacklight 5)-}
   {-, ("M-S-o", adjustWSBacklight (-5))-}
   {-, ("M-<F3>", adjustWSBacklight (-5))-}
