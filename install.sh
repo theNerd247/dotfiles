@@ -37,6 +37,7 @@ lnk xmobar/xmobarcc
 lnk xmonad
 lnk Xresources
 lnk zshrc
+lnk xinitrc
 
 inst vim
 inst oh-my-zsh
