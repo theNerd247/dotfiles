@@ -49,13 +49,13 @@ COMPLETION_WAITING_DOTS="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git vi-mode archlinux custom)
+plugins=(git vi-mode archlinux custom stack)
 
 # User configuration
 
 export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
 export PATH="$PATH:."
-export PATH="$PATH:$HOME/.cabal/bin/"
+export PATH="$PATH:$HOME/.local/bin"
 export PATH="$PATH:/bin"
 export PATH="$PATH:$HOME/.gem/ruby/2.1.0/bin"
 export PATH="$PATH:$HOME/.gem/ruby/2.2.0/bin"
