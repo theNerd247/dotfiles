@@ -1,6 +1,5 @@
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
-export TERM=xterm
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
@@ -71,7 +70,7 @@ export GIT_EDITOR=$EDITOR
 # list of catkin_workspaces which is required by the ros plugin
 export ROS_DISTRO="indigo"
 
-CATKIN_WS=("/home/noah/src/SG/")
+CATKIN_WS=("$HOME/src/com/ros")
 export CATKIN_WS
 
 #GAZEBO_PROJECTS=()
