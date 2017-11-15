@@ -1,3 +1,14 @@
+#!/bin/bash
+
+#go to our install directory
+BASEPATH="$1"
+
+if [[ -z $BASEPATH ]]; then
+	BASEPATH="$HOME"
+fi
+
+echo "BASEPATH: $BASEPATH"
+
 function getInstPath()
 {
 	echo ".$(basename $1)"
@@ -13,7 +24,7 @@ function lnk()
 		instPath="$(getInstPath $2)"
 	fi
 
-	ln -s -i -T "$HOME/.dotfiles/$1" "$instPath"
+	ln -s -i "$HOME/.dotfiles/$1" "$instPath"
 }
 
 function inst()
@@ -22,22 +33,19 @@ function inst()
 	./install.sh
 }
 
-#go to our install directory
-
-BASEPATH="$1"
 
 #create the symbolic links to the config paths
 
-lnk astylerc
+#lnk astylerc
 lnk fonts
 lnk oh-my-zsh 
 lnk vimrc vim
 lnk vimrc/vimrc 
-lnk xmobar/xmobarcc
-lnk xmonad
-lnk Xresources
+#lnk xmobar/xmobarcc
+#lnk xmonad
+#lnk Xresources
 lnk zshrc
-lnk xinitrc
+#lnk xinitrc
 
 inst vim
 inst oh-my-zsh
