@@ -7,29 +7,40 @@ if [[ -z $BASEPATH ]]; then
 	BASEPATH="$HOME"
 fi
 
-echo "BASEPATH: $BASEPATH"
+if [[ ! -e "$BASEPATH/.dotfiles" ]]; then
+	echo "$BASEPATH/.dotfiles doesn't exist!"
+	exit 1
+fi
+
+echo "installing system to: $BASEPATH"
 
 function getInstPath()
 {
-	echo ".$(basename $1)"
+	echo "$BASEPATH/.$(basename $1)"
 }
 
 function lnk()
 {
-	cd $BASEPATH
-
 	if [[ -z $2 ]]; then
-		instPath="$(getInstPath $1)"
-	else
-		instPath="$(getInstPath $2)"
+		echo "couln't get install path"
+		exit 1
 	fi
 
-	ln -s -i "$HOME/.dotfiles/$1" "$instPath"
+	instPath="$(getInstPath $2)"
+
+	echo "linking $BASEPATH/.dotfiles/$1 to $instPath"
+
+	rm -ri $instPath
+
+	ln -s -i "$BASEPATH/.dotfiles/$1" "$instPath"
 }
 
 function inst()
 {
-	cd "$BASEPATH/$(getInstPath $1)"
+	instPath="$(getInstPath $1)"
+
+	echo "running install at $instPath"
+	cd "$instPath"
 	./install.sh
 }
 
@@ -37,14 +48,14 @@ function inst()
 #create the symbolic links to the config paths
 
 #lnk astylerc
-lnk fonts
-lnk oh-my-zsh 
+lnk fonts fonts
+lnk oh-my-zsh oh-my-zsh
 lnk vimrc vim
-lnk vimrc/vimrc 
+lnk "vimrc/vimrc" vimrc
 #lnk xmobar/xmobarcc
 #lnk xmonad
 #lnk Xresources
-lnk zshrc
+lnk zshrc zshrc
 #lnk xinitrc
 
 inst vim
