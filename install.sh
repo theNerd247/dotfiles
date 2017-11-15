@@ -49,14 +49,15 @@ function inst()
 
 #lnk astylerc
 lnk fonts fonts
-lnk oh-my-zsh oh-my-zsh
-lnk vimrc vim
-lnk "vimrc/vimrc" vimrc
+#lnk oh-my-zsh oh-my-zsh
+#lnk vimrc vim
+#lnk "vimrc/vimrc" vimrc
 #lnk xmobar/xmobarcc
 #lnk xmonad
 #lnk Xresources
-lnk zshrc zshrc
+#lnk zshrc zshrc
 #lnk xinitrc
 
-inst vim
-inst oh-my-zsh
+#inst vim
+#inst oh-my-zsh
+inst fonts
