@@ -1,29 +1,19 @@
-import XMonad
-import XMonad.Hooks.DynamicLog
-import XMonad.Hooks.ManageDocks
-import XMonad.Util.Run (spawnPipe)
-import XMonad.Layout.NoBorders
-import XMonad.Layout.Circle
-import XMonad.Layout.Fullscreen
-import XMonad.Layout.Grid
-import XMonad.Layout.PerWorkspace
-import XMonad.Layout.Tabbed
-import XMonad.Layout.Minimize
-import XMonad.Hooks.ManageHelpers
-import XMonad.Actions.WindowBringer
-import XMonad.Actions.CycleWS
-import XMonad.Actions.MouseGestures
-import XMonad.Actions.WithAll
-import XMonad.Actions.OnScreen
-import XMonad.Hooks.FadeWindows
-import System.IO
-import Data.Monoid (mconcat)
+{-# LANGUAGE FlexibleContexts, PatternGuards #-}
 
-import qualified Data.Map as M
+import Control.Applicative ((<$>),(<*>))
+import XMonad
+import XMonad.Actions.WindowBringer
+import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.FadeWindows
+import XMonad.Util.Font
+import XMonad.Hooks.ManageHelpers
+import XMonad.Layout.Grid
+import XMonad.Layout.NoBorders
+import XMonad.Layout.Tabbed
+import XMonad.Util.Loggers
+import qualified XMonad.Hooks.EwmhDesktops as EWMH
 import qualified XMonad.StackSet as SS
 import qualified XMonad.Util.EZConfig as EZ
-import Control.Applicative ((<$>),(<*>))
-import Data.Maybe (listToMaybe, fromJust)
 
 {-import XMonad.Actions.WorkspaceBacklight-}
 
@@ -31,91 +21,30 @@ modmask = mod4Mask
 home = "/home/noah/"
 
 -- default applications
-term = "urxvt"
-inTerm :: String -> String
-inTerm = ("exec urxvt -e " ++)
-webbrowser = "firefox"
-
--- keyboard applications
-scripts = home ++ ".dotfiles/xmonad/scripts/"
+webbrowser = "google-chrome-stable"
 
 -- remove the ncmpcpp toggle command as it's currently broken
 toggleSound = "amixer set Master toggle"
--- remove the ncmpcpp toggle command as it's currently broken
-toggleMusic = "mpc toggle"
+term = "termite"
 volUp = "amixer set Master 5%+"
 volDown = "amixer set Master 5%-"
-musicPlayer =  scripts ++ "openNCMPCPP"
-mail = scripts ++ "openMail"
-lockPc = "xscreensaver-command -lock"
-network = inTerm "wicd-curses"
-ranger = inTerm "ranger"
+volToggle = "amixer set Master toggle"
 bckLightDown = "xbacklight -dec 5"
 bckLightUp = "xbacklight -inc 5"
-runXmobar = "~/.cabal/bin/xmobar ~/.xmobarcc"
-
--- TODO: make this move the given program to the desired workspace
--- executes the given shell command then goes to the given workspace
-newProg :: String -> WorkspaceId -> X ()
-newProg c i = spawn c >> (windows $ vs <*> getScreenId i)
-  where
-    vs ws Nothing = ws
-    vs ws (Just s) = viewOnScreen s i ws
-
--- gets the screen of the given workspace
-getScreenId :: WorkspaceId -> WindowSet -> Maybe ScreenId
-getScreenId s ws = listToMaybe [sid | SS.Screen i sid _ <- SS.screens ws, (SS.tag i) == s]
 
 -- custom keyboard mappings
 customkeys :: [(String,X ())]
 customkeys =
-  [ ("M-a", spawn toggleSound >> spawn toggleMusic)
-  , ("M-S-a", spawn toggleMusic)
-  , ("M-v", spawn volUp)
-  , ("M-S-v", spawn volDown)
-  , ("M-m", spawn musicPlayer)
-  , ("M-S-m", newProg mail "office")
-  , ("M-c", spawn webbrowser)
-  , ("M-t", spawn term)
-  , ("M-S-t", withFocused $ windows . SS.sink)
-  , ("M-S-l", shiftTo Next AnyWS)
-  , ("M-S-h", shiftTo Prev AnyWS)
-  , ("M-g", gotoMenu)
-  , ("M-b", bringMenu)
-  , ("M-M1-l", spawn lockPc)
-  , ("M-n", spawn network)
-  , ("M-f", spawn ranger)
-  , ("<XF86MonBrightnessUp>", spawn bckLightUp)
-  , ("<XF86MonBrightnessDown>", spawn bckLightDown)
-  , ("M-<F3>", spawn "xbacklight -set 2")
-  , ("M-<F4>", spawn "xbacklight -set 30")
-  {-, ("M-o", adjustWSBacklight 5)-}
-  {-, ("M-S-o", adjustWSBacklight (-5))-}
-  {-, ("M-<F3>", adjustWSBacklight (-5))-}
-  ]
-
-{-backlightConf :: BacklightConf-}
-{-backlightConf = setDefaultScreenBrightness (S 0) $-}
-  {-[-}
-    {-("web",20)-}
-    {-,("term",60)-}
-  {-]-}
-  {-++ [(w,50) | w <- (show <$> [3..9])]-}
-
-{-backlightKeys = [(modmask,ks) | ks <- [xK_1 .. xK_9]]-}
-
-{-hideAllWindows = hide SS.allWindows-}
-
-gestures = M.fromList 
-  [([D], (\w -> withAll hide))
-  ,([U], (\w -> withAll reveal))
-  ]
-
--- button4 is scrollup
-customMouse = 
-  [((modmask,button4), (\w -> windows SS.focusUp)) 
-  ,((modmask,button5), (\w -> windows SS.focusDown))
-  ,((modmask .|. shiftMask,button1), mouseGesture gestures)
+  [ ("M-v",                      spawn volUp)
+  , ("M-S-v"                   , spawn volDown)
+  , ("M-c"                     , spawn webbrowser)
+  , ("M-t"                     , spawn term)
+  , ("M-S-t"                   , withFocused $ windows . SS.sink)
+  , ("<XF86MonBrightnessUp>"   , spawn bckLightUp)
+  , ("<XF86MonBrightnessDown>" , spawn bckLightDown)
+  , ("<XF86AudioRaiseVolume>"  , spawn volUp)
+  , ("<XF86AudioLowerVolume>"  , spawn volDown)
+  , ("<XF86AudioMute>"         , spawn volToggle)
   ]
 
 -- border colors
@@ -124,9 +53,9 @@ unfocusBorder = "#303030"
 
 -- default Tall config 
 tiled = Tall 
-  {tallNMaster = nm
-  ,tallRatioIncrement = inc
-  ,tallRatio = rt
+  { tallNMaster = nm
+  , tallRatioIncrement = inc
+  , tallRatio = rt
   }
   where 
     nm = 1
@@ -135,74 +64,70 @@ tiled = Tall
 
 -- tabbed layout config
 myTabbed = tabbedBottom shrinkText tabCfg
-  where tabCfg = defaultTheme
+  where tabCfg = def
 
 -- layouts
 layouts = myTabbed
   ||| tiled
   ||| Grid
-  ||| Circle 
   ||| Full
-  ||| Mirror tiled
 
 -- layout hooks 
-myLayoutHooks = avoidStruts 
-  $ smartBorders
-  $ fullscreenFull 
-  $ fullscreenFloat
+myLayoutHooks = 
+    smartBorders
   $ layouts
 
--- workspace details
-myWorkspaces = (custom ++) $ show <$> drop n [1..9]
-  where 
-    custom = ["web","term","office","media"]
-    n = length custom
-
 -- hooks to perform when a window opens
-myManageHooks = 
-  manageDocks
-  <+> fullscreenManageHook 
-  <+> helpers
-  <+> windowToWorkSpace
-  {-<+> fadeHooks-}
-  <+> manageHook defaultConfig
-
-windowToWorkSpace = composeAll
-  [ 
-    className =? "Firefox" --> doShift "web"
-    ,className =? "Gimp" --> doShift "media"
-    ,className =? "Evince" --> doShift "office"
-  ]
+myManageHooks = helpers <+> manageHook def
 
 helpers = composeOne
-  [isFullscreen -?> doFullFloat]
+  [ isFullscreen -?> doFullFloat --make fullscreen windows (as when watching a video) floating instead of tiled
+  , isDialog     -?> doCenterFloat
+  ]
 
 -- X event hooks
 myEventHooks = 
-  fullscreenEventHook
-  <+> (handleEventHook defaultConfig)
+  EWMH.fullscreenEventHook
+  <+> (handleEventHook def)
 
-{-myStartupHooks = -}
-  {-enableWSBrightnessControl backlightConf-}
+myXmobar = statusBar myXmobarCmd myPP toggleStrutsKey
+  where
+    myXmobarCmd = "xmobar -o -t '%StdinReader%' -f Monospace -c '[Run StdinReader]'"
+    myPP = xmobarPP
+      { ppExtras = 
+          [ onRight logTitle
+          , onCenter $ 
+              date "%a %Y-%m-%d %r"
+              `mappend` logSp 3
+              `mappend` batt
+          ]
+      , ppOrder = \(w:_:_:n:d:[]) -> [ws w,d,n]
+      , ppSep = "   "
+      }
+    ws w = take 110 $ w ++ (repeat ' ')
+    onCenter = fixedWidthL AlignCenter " " 90
+    onRight = fixedWidthL AlignRight " " 100
+    toggleStrutsKey XConfig{modMask = modm} = (modm, xK_b)
+    batt = 
+      logCmd "acpi | sed -r 's/.*?: .*, (.*)%.*/\\1/'"
+        >>= return . fmap battColor
+      where
+        battColor c
+          | b < 33 = xmobarColor "green" "red" ("***"++c++"***")
+          | b <= 66 = xmobarColor "yellow" "" ("**"++c++"**")
+          | b <= 100 = xmobarColor "green" "" c
+          where
+            b = read c :: Int
 
-main = do
-  xmproc <- spawnPipe "/usr/bin/xmobar -o /home/noah/.xmobarcc"
-  xmonad $ defaultConfig
-    { 
-      {-startupHook = myStartupHooks-}
-     manageHook = myManageHooks
-    , handleEventHook = myEventHooks
-    , layoutHook = myLayoutHooks
-    , modMask = modmask
-    , terminal = term
-    , normalBorderColor = unfocusBorder
-    , focusedBorderColor = focusBorder
-    , workspaces = myWorkspaces
-    , logHook = dynamicLogWithPP xmobarPP
-        { ppOutput = hPutStrLn xmproc
-        , ppTitle = xmobarColor "green" "" . shorten 50
-        }
-    }
-    `EZ.additionalKeysP` customkeys
-    `EZ.additionalMouseBindings` customMouse
-    {-`enableWSKeys` backlightKeys-}
+main = xmonad =<< myXmobar config
+  where
+    config = def 
+      { manageHook = myManageHooks
+      , handleEventHook = myEventHooks
+      , layoutHook = myLayoutHooks
+      , modMask = modmask
+      , terminal = "xterm"
+      , normalBorderColor = unfocusBorder
+      , focusedBorderColor = focusBorder
+      }
+      `EZ.additionalKeysP` customkeys

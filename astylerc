@@ -10,3 +10,5 @@
 --indent-classes
 --indent-modifiers
 --indent-switches
+--indent-namespaces
+--indent-col1-comments
