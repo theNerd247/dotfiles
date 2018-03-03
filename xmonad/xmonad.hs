@@ -90,34 +90,17 @@ myEventHooks =
   EWMH.fullscreenEventHook
   <+> (handleEventHook def)
 
-myXmobar = statusBar myXmobarCmd myPP toggleStrutsKey
+
+myXmobar = statusBar myXmobarCmd myXmobarPP toggleStrutsKey
   where
-    myXmobarCmd = "xmobar -o -t '%StdinReader%' -f Monospace -c '[Run StdinReader]'"
-    myPP = xmobarPP
-      { ppExtras = 
-          [ onRight logTitle
-          , onCenter $ 
-              date "%a %Y-%m-%d %r"
-              `mappend` logSp 3
-              `mappend` batt
-          ]
-      , ppOrder = \(w:_:_:n:d:[]) -> [ws w,d,n]
-      , ppSep = "   "
-      }
-    ws w = take 110 $ w ++ (repeat ' ')
-    onCenter = fixedWidthL AlignCenter " " 90
-    onRight = fixedWidthL AlignRight " " 100
+    myXmobarCmd = "xmobar -o /home/noah/.xmonad/xmobarcc"
+    myXmobarPP = xmobarPP 
+                  { ppCurrent = xmobarColor "#859900" "" . wrap "[" "]"
+                  , ppVisible = xmobarColor "#2aa198" "" . wrap "(" ")"
+                  , ppLayout = xmobarColor "#2aa198" ""
+                  , ppTitle = xmobarColor "#859900" "" . shorten 50
+                  }
     toggleStrutsKey XConfig{modMask = modm} = (modm, xK_b)
-    batt = 
-      logCmd "acpi | sed -r 's/.*?: .*, (.*)%.*/\\1/'"
-        >>= return . fmap battColor
-      where
-        battColor c
-          | b < 33 = xmobarColor "green" "red" ("***"++c++"***")
-          | b <= 66 = xmobarColor "yellow" "" ("**"++c++"**")
-          | b <= 100 = xmobarColor "green" "" c
-          where
-            b = read c :: Int
 
 main = xmonad =<< myXmobar config
   where

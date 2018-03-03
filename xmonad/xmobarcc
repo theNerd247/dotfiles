@@ -1,0 +1,83 @@
+Config 
+{ hideOnStart = False
+, lowerOnStart = True
+, position = Top
+, allDesktops = False
+, border = NoBorder
+, overrideRedirect = False
+, sepChar = "%"
+, alignSep = "}{"
+, persistent = False
+-- Appearance
+, font = "xft:OpenSans:size=11:antialias=true"
+, bgColor = "#073642"
+, fgColor = "#93a1a1"
+
+--Plugins
+, commands = 
+  -- CPU Activity Monitor
+  [ Run Cpu
+    [ "--low"      , "#2aa198"
+    , "--normal"   , "#859900"
+    , "--high"     , "#dc322f"
+    ]
+    10
+
+  -- Memory Usage Monitor
+  , Run Memory
+    [ "--low"      , "#2aa198"
+    , "--normal"   , "#859900"
+    , "--high"     , "#dc322f"
+    ]
+    10
+
+  -- Battery Monitor
+  , Run BatteryP ["BAT1"]
+    [ "--low"      , "#dc322f"
+    , "--normal"   , "#859900"
+    , "--high"     , "#2aa198"
+    , "--" 
+    -- battery specific options
+    -- discharging status
+    , "-o"   , "<left>% (<timeleft>)"
+    -- AC "on" status
+    , "-O" , "<fc=#2aa198>Charging</fc>"
+    -- charged status
+    ,"-i"   , "<fc=#859900>Charged</fc>"
+    ]
+    10
+
+  -- Network Activity Monitor
+  , Run Network "enp1s0"
+    [ "--low"      , "#2aa198"
+    , "--normal"   , "#859900"
+    , "--high"     , "#dc322f"
+    ]
+    10
+  , Run Network "wlp3s0"
+    [ "--low"      , "#2aa198"
+    , "--normal"   , "#859900"
+    , "--high"     , "#dc322f"
+    ]
+    10
+  , Run Wireless "wlp3s0"
+    [ "--low"      , "#2aa198"
+    , "--normal"   , "#859900"
+    , "--high"     , "#dc322f"
+    ]
+    10
+  , Run Volume "default" "Master" 
+    [ "--low"      , "#2aa198"
+    , "--normal"   , "#859900"
+    , "--high"     , "#dc322f"
+    ]  -- Time and Date Display
+    10
+  , Run Date "<fc=#268bd2>%a %b %d %I:%M:%S</fc>" "date" 10
+  -- Allow input from xmonad
+  , Run StdinReader
+  ]
+, template = 
+    "%StdinReader%\
+    \}%date% | %battery% | %default:Master%\
+    \{ (%enp1s0% | %wlp3s0% | %wlp3s0wi%) (%cpu% | %memory%)"
+}
