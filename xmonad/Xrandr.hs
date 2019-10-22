@@ -143,8 +143,7 @@ data OutputInfo = OutputInfo
   { outputInfoName :: OutputName
   , isConnected    :: Bool
   , isPrimary      :: Bool
-  , modeNames      :: [ModeName]
-  , isEnabled      :: Bool
+  , modeNames      :: [(ModeName, Bool)]
   } deriving (Show)
 
 instance HasOutput OutputInfo where
@@ -170,7 +169,6 @@ parseOutputInfo =
   <*>  parsePrimary 
   <*   skipSpace
   <*   ignoreRestOfLine
-  <**> (pure uncurry)
   <*>  parseModeNames
 
 parseOutputName :: Parser OutputName
@@ -184,11 +182,8 @@ parseConnected =
 parsePrimary :: Parser Bool
 parsePrimary = flag $ string "primary"
 
-parseModeNames :: Parser ([ModeName], Bool)
-parseModeNames = anyEnabledModes <$> many parseModeNameAndEnabled
-
-anyEnabledModes :: [(ModeName, Bool)] -> ([ModeName], Bool)
-anyEnabledModes = (fmap fst) &&& (getAny . foldMap (Any. snd))
+parseModeNames :: Parser [(ModeName, Bool)]
+parseModeNames = many parseModeNameAndEnabled
 
 parseModeNameAndEnabled :: Parser (ModeName, Bool)
 parseModeNameAndEnabled = 
