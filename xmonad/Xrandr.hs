@@ -1,26 +1,34 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE OverloadedStrings #-}
 
+module Main where
 
-module Xrandr where
-
+import Prelude hiding (takeWhile, take)
 import Numeric.Natural
 import Data.Foldable (foldMap)
+import Control.Arrow ((&&&))
+import Control.Applicative
+import Data.Attoparsec.Text
+import Data.Monoid
+import Data.Functor.Foldable
+import Shelly
+import qualified Data.Text as T
 
-newtype Fix f = Fix { unFix :: f(Fix f) }
-
-cata :: (Functor f) => (f a -> a) -> Fix f -> a
-cata alg = alg . fmap (cata alg) . unFix
-
-ana :: (Functor f) => (a -> f a) -> a -> Fix f
-ana coalg = Fix . fmap (ana coalg) . coalg
-
-hylo :: (Functor f) => (f b -> b) -> (a -> f a) -> a -> b
-hylo alg coalg = alg . fmap (hylo alg coalg) . coalg 
-
-para :: (Functor f) => (f (Fix f, a) -> a) -> Fix f -> a
-para palg = palg . fmap ((,) <*> para palg) . unFix
+-- newtype Fix f = Fix { unFix :: f(Fix f) }
+-- 
+-- cata :: (Functor f) => (f a -> a) -> Fix f -> a
+-- cata alg = alg . fmap (cata alg) . unFix
+-- 
+-- ana :: (Functor f) => (a -> f a) -> a -> Fix f
+-- ana coalg = Fix . fmap (ana coalg) . coalg
+-- 
+-- hylo :: (Functor f) => (f b -> b) -> (a -> f a) -> a -> b
+-- hylo alg coalg = alg . fmap (hylo alg coalg) . coalg 
+-- 
+-- para :: (Functor f) => (f (Fix f, a) -> a) -> Fix f -> a
+-- para palg = palg . fmap ((,) <*> para palg) . unFix
 
 type Outputs a = Fix (OutputsF a)
 
@@ -47,8 +55,10 @@ type OutputName = String
 
 data Mode = 
     Disabled
-  | ModeName (Natural, Natural)
+  | ModeName ModeName
   deriving (Show)
+
+type ModeName = (Natural, Natural)
 
 data Rotation =
     Normal
@@ -124,8 +134,79 @@ buildCmd' (Secondary p o (Fix os, cmds)) =
   <> " " <> (buildCmd p)
   <> " " <> (output os)
 
-testp = Output "eDP1" (ModeName (1920, 1080)) Normal
+data OutputInfo = OutputInfo
+  { outputInfoName :: OutputName
+  , isConnected    :: Bool
+  , isPrimary      :: Bool
+  , modeNames      :: [ModeName]
+  , isEnabled      :: Bool
+  } deriving (Show)
 
-tests = Output "DP1" (ModeName (1360, 768)) Normal
+instance HasOutput OutputInfo where
+  output = outputInfoName
 
-test = secondary LeftOf tests $ primary testp
+main = runXrandr >>= return . parseXrandr
+
+runXrandr = -- T.pack <$> readFile "out.txt"
+  shelly $ run "xrandr" []
+
+parseXrandr = parseOnly $ parseOutputInfos <* endOfInput
+
+parseOutputInfos :: Parser [OutputInfo]
+parseOutputInfos = string "Screen" *> ignoreRestOfLine *> many parseOutputInfo
+
+parseOutputInfo :: Parser OutputInfo
+parseOutputInfo = 
+       OutputInfo 
+  <$>  parseOutputName 
+  <*   skipSpace
+  <*>  parseConnected
+  <*   skipSpace
+  <*>  parsePrimary 
+  <*   skipSpace
+  <*   ignoreRestOfLine
+  <**> (pure uncurry)
+  <*>  parseModeNames
+
+parseOutputName :: Parser OutputName
+parseOutputName = T.unpack <$> takeTill (==' ')
+
+parseConnected :: Parser Bool
+parseConnected = 
+      (pure True  <* string "connected") 
+  <|> (pure False <* string "disconnected")
+
+parsePrimary :: Parser Bool
+parsePrimary = flag $ string "primary"
+
+parseModeNames :: Parser ([ModeName], Bool)
+parseModeNames = anyEnabledModes <$> many parseModeNameAndEnabled
+
+anyEnabledModes :: [(ModeName, Bool)] -> ([ModeName], Bool)
+anyEnabledModes = (fmap fst) &&& (getAny . foldMap (Any. snd))
+
+parseModeNameAndEnabled :: Parser (ModeName, Bool)
+parseModeNameAndEnabled = 
+     pure (,)
+  <* (many1 $ char ' ') 
+  <*> parseModeName
+  <* skipSpace
+  <* take 5
+  <*> (flag $ char '*')
+  <* ignoreRestOfLine
+
+parseModeName :: Parser ModeName
+parseModeName = 
+  (,)
+  <$> parseNat 
+  <* char 'x' 
+  <*> parseNat
+
+flag :: Parser a -> Parser Bool
+flag p = pure True <* p <|> pure False
+
+parseNat :: Parser Natural
+parseNat = read <$> many1 digit
+
+ignoreRestOfLine :: Parser ()
+ignoreRestOfLine = takeTill isEndOfLine *> endOfLine
