@@ -8,12 +8,14 @@ module Main where
 import Prelude hiding (takeWhile, take)
 import Numeric.Natural
 import Data.Foldable (foldMap)
-import Control.Arrow ((&&&))
+import Control.Arrow
 import Control.Applicative
 import Data.Attoparsec.Text
 import Data.Monoid
+import Data.List (partition)
 import Data.Functor.Foldable
-import Shelly
+import Shelly (shelly, run)
+import Data.Maybe (listToMaybe)
 import qualified Data.Text as T
 
 -- newtype Fix f = Fix { unFix :: f(Fix f) }
@@ -126,6 +128,9 @@ primary = Fix . Primary
 secondary :: Position -> a -> Outputs a -> Outputs a
 secondary p x = Fix . (Secondary p x)
 
+leftOf = secondary LeftOf
+rightOf = secondary RightOf
+
 buildCmd' :: (ToCmd a, HasOutput a) => OutputsF a (Outputs a, Cmd) -> Cmd
 buildCmd' (Primary o) = (buildCmd o) <> " --primary"
 buildCmd' (Secondary p o (Fix os, cmds)) = 
@@ -210,3 +215,12 @@ parseNat = read <$> many1 digit
 
 ignoreRestOfLine :: Parser ()
 ignoreRestOfLine = takeTill isEndOfLine *> endOfLine
+
+filterIsConnected :: [OutputInfo] -> [OutputInfo]
+filterIsConnected = filter isConnected
+
+getPrimary :: [OutputInfo] -> Maybe (OutputInfo, [OutputInfo])
+getPrimary xs = do
+  let (ps, nps) = partition isPrimary xs
+  h <- listToMaybe ps
+  return (h, nps ++ (tail ps))
