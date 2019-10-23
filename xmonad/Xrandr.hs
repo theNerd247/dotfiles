@@ -14,23 +14,10 @@ import Data.Attoparsec.Text
 import Data.Monoid
 import Data.List (partition)
 import Data.Functor.Foldable
-import Shelly (shelly, run)
+import Shelly (shelly, run, run_)
 import Data.Maybe (listToMaybe)
 import qualified Data.Text as T
-
--- newtype Fix f = Fix { unFix :: f(Fix f) }
--- 
--- cata :: (Functor f) => (f a -> a) -> Fix f -> a
--- cata alg = alg . fmap (cata alg) . unFix
--- 
--- ana :: (Functor f) => (a -> f a) -> a -> Fix f
--- ana coalg = Fix . fmap (ana coalg) . coalg
--- 
--- hylo :: (Functor f) => (f b -> b) -> (a -> f a) -> a -> b
--- hylo alg coalg = alg . fmap (hylo alg coalg) . coalg 
--- 
--- para :: (Functor f) => (f (Fix f, a) -> a) -> Fix f -> a
--- para palg = palg . fmap ((,) <*> para palg) . unFix
+import Control.Monad ((>=>))
 
 type Outputs a = Fix (OutputsF a)
 
@@ -139,6 +126,9 @@ buildCmd' (Secondary p o (Fix os, cmds)) =
   <> " " <> (buildCmd p)
   <> " " <> (output os)
 
+makeCmd :: (ToCmd a, HasOutput a) => Outputs a -> Cmd
+makeCmd = para buildCmd'
+
 data OutputInfo = OutputInfo
   { outputInfoName :: OutputName
   , isConnected    :: Bool
@@ -149,10 +139,16 @@ data OutputInfo = OutputInfo
 instance HasOutput OutputInfo where
   output = outputInfoName
 
-main = runXrandr >>= return . parseXrandr
+main = 
+  runXrandr []
+  >>= 
+    either print (buildAndRun >=> print)
+    . parseXrandr 
 
-runXrandr = -- T.pack <$> readFile "out.txt"
-  shelly $ run "xrandr" []
+buildAndRun = 
+    runXrandr . (:[]) . T.pack . inlinedOutputs (asExternal LeftOf)
+
+runXrandr = shelly . run "xrandr"
 
 parseXrandr = parseOnly $ parseOutputInfos <* endOfInput
 
@@ -211,6 +207,14 @@ parseNat = read <$> many1 digit
 ignoreRestOfLine :: Parser ()
 ignoreRestOfLine = takeTill isEndOfLine *> endOfLine
 
+inlinedOutputs f = 
+  maybe "no primary display" makeCmd 
+  . fmap (uncurry f) 
+  . getPrimary 
+  . filterIsConnected
+
+getConnectedAndPrmiary = getPrimary . filterIsConnected
+
 filterIsConnected :: [OutputInfo] -> [OutputInfo]
 filterIsConnected = filter isConnected
 
@@ -219,3 +223,19 @@ getPrimary xs = do
   let (ps, nps) = partition isPrimary xs
   h <- listToMaybe ps
   return (h, nps ++ (tail ps))
+
+asExternal :: (Foldable f, Functor f) => Position -> OutputInfo -> f OutputInfo -> Outputs Output
+asExternal p = flip (asDir p . (fmap $ toOutput Normal)) . primary . (toOutput Normal) 
+
+asDir :: (Foldable f) => Position -> f a -> Outputs a -> Outputs a
+asDir d = appEndo . foldMap (Endo . secondary d)
+
+toOutput :: Rotation -> OutputInfo -> Output
+toOutput r o = Output
+  { name = output o
+  , mode = mainMode (modeNames o)
+  , rotation = r
+  }
+
+mainMode :: [(ModeName, Bool)] -> Mode
+mainMode = maybe Disabled (ModeName . fst) . listToMaybe . filter snd
