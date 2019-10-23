@@ -12,12 +12,13 @@ import Control.Arrow
 import Control.Applicative
 import Data.Attoparsec.Text
 import Data.Monoid
-import Data.List (partition)
+import Data.List (partition, find)
 import Data.Functor.Foldable
 import Shelly (shelly, run, run_)
 import Data.Maybe (listToMaybe)
 import qualified Data.Text as T
 import Control.Monad ((>=>))
+import Data.Bifunctor (bimap)
 
 type Outputs a = Fix (OutputsF a)
 
@@ -36,18 +37,23 @@ data Position =
 
 data Output = Output
   { name     :: OutputName
-  , mode     :: Mode
-  , rotation :: Rotation
+  , status   :: Status
   } deriving (Show)
 
 type OutputName = T.Text
 
-data Mode = 
-    Disabled
-  | ModeName ModeName
+data Status = 
+    Disconnected
+  | Disabled
+  | Enabled Config
   deriving (Show)
 
-type ModeName = (Natural, Natural)
+data Config = Config
+  { rotation :: Rotation
+  , mode     :: Mode
+  } deriving (Show)
+
+type Mode = (Natural, Natural)
 
 data Rotation =
     Normal
@@ -64,37 +70,43 @@ class ToCmd a where
 instance (ToCmd a) => ToCmd (Maybe a) where
   buildCmd = maybe [] buildCmd
 
-instance ToCmd Mode where
-  buildCmd Disabled = pure "--off"
-  buildCmd (ModeName m) = ["--mode", asXrandrMode m]
-    where
-      asXrandrMode :: ModeName -> T.Text
-      asXrandrMode (x,y) = (T.pack . show $ x) <> "x" <> (T.pack . show $ y)
-
-instance (ToCmd a) => ToCmd [a] where
-  buildCmd = foldMap buildCmd
-
-instance ToCmd Position where
-  buildCmd LeftOf  = pure "--left-of"
-  buildCmd RightOf = pure "--right-of"
-  buildCmd Above   = pure "--above"
-  buildCmd Below   = pure "--below"
-  buildCmd SameAs  = pure "--same-as"
-
-instance ToCmd Rotation where
-  buildCmd Normal      = pure "normal"
-  buildCmd RotateLeft  = pure "left"
-  buildCmd RotateRight = pure "right"
-  buildCmd Inverted    = pure "inverted"
+instance (Show a, Show b) => ToCmd (a, b) where
+  buildCmd (x,y) =
+    [ "--mode"
+    , (T.pack . show $ x) <> "x" <> (T.pack . show $ y)
+    ]
 
 instance ToCmd Output where
-  buildCmd Output{ name, mode, rotation} =
+  buildCmd Output{ name, status } =
     [ "--output"
     , name 
-    , "--rotate"
     ] 
-    <> (buildCmd rotation)
-    <> (buildCmd mode)
+    <> (buildCmd status)
+
+instance ToCmd Status where
+  buildCmd (Enabled m) = buildCmd m
+  buildCmd _ = ["--off"]
+
+instance ToCmd Config where
+  buildCmd m = 
+       (buildCmd . mode $ m)
+    <> (buildCmd . rotation $ m)
+    
+instance ToCmd Rotation where
+  buildCmd x = ["--rotate", rotateOption x]
+
+rotateOption :: Rotation -> T.Text
+rotateOption Normal      = "normal"
+rotateOption RotateLeft  = "left"
+rotateOption RotateRight = "right"
+rotateOption Inverted    = "inverted"
+
+positionArg :: Position -> T.Text
+positionArg LeftOf  = "--left-of"
+positionArg RightOf = "--right-of"
+positionArg Above   = "--above"
+positionArg Below   = "--below"
+positionArg SameAs  = "--same-as"
 
 class HasOutput a where
   output :: a -> OutputName
@@ -120,31 +132,30 @@ buildCmd' (Primary o) = buildCmd o <> ["--primary"]
 buildCmd' (Secondary p o (Fix os, cmds)) = 
   cmds 
   <> (buildCmd o) 
-  <> (buildCmd p)
+  <> [positionArg p]
   <> [output os]
 
 makeCmd :: (ToCmd a, HasOutput a) => Outputs a -> Cmd
 makeCmd = para buildCmd'
 
 data OutputInfo = OutputInfo
-  { outputInfoName :: OutputName
-  , isConnected    :: Bool
-  , isPrimary      :: Bool
-  , modeNames      :: [(ModeName, Bool)]
+  { isPrimary  :: Bool
+  , outputInfo :: Output
   } deriving (Show)
 
 instance HasOutput OutputInfo where
-  output = outputInfoName
+  output = output . outputInfo
 
-main = 
-  runXrandr []
-  >>= 
-    either print (buildAndRun >=> print)
-    . parseXrandr 
+main = readFile "out.txt" >>= either print buildAndRun . parseXrandr . T.pack
+--   runXrandr []
+--   >>= 
+--     either print (buildAndRun >=> print)
+--     . parseXrandr 
 
 buildAndRun = 
-    runXrandr . inlinedOutputs (asExternal LeftOf)
+    print . inlinedOutputs (asExternal LeftOf)
 
+runXrandr :: [T.Text] -> IO T.Text
 runXrandr = shelly . run "xrandr"
 
 parseXrandr = parseOnly $ parseOutputInfos
@@ -153,43 +164,60 @@ parseOutputInfos :: Parser [OutputInfo]
 parseOutputInfos = ignoreRestOfLine *> many parseOutputInfo
 
 parseOutputInfo :: Parser OutputInfo
-parseOutputInfo = 
-       OutputInfo 
-  <$>  parseOutputName 
-  <*   skipSpace
-  <*>  parseConnected
-  <*   skipSpace
-  <*>  parsePrimary 
-  <*   skipSpace
-  <*   ignoreRestOfLine
-  <*>  parseModeNames
+parseOutputInfo = (uncurry OutputInfo) <$> parseOutput 
+
+parseOutput :: Parser (Bool, Output)
+parseOutput = 
+  (fmap . Output) 
+  <$> parseOutputName 
+  <*  skipSpace
+  <*> parseStatus
 
 parseOutputName :: Parser OutputName
 parseOutputName = takeTill (==' ')
 
-parseConnected :: Parser Bool
-parseConnected = 
-      (pure True  <* string "connected") 
-  <|> (pure False <* string "disconnected")
+parseStatus :: Parser (Bool, Status)
+parseStatus = isDisconnected <|> isConnected
+
+isDisconnected :: Parser (Bool, Status)
+isDisconnected = 
+  pure (False, Disconnected) 
+  <* string "disconnected"
+  <* ignoreRestOfLine
+
+isConnected :: Parser (Bool, Status)
+isConnected = 
+  pure (,)
+  <*  string "connected" 
+  <* skipSpace
+  <*> parsePrimary 
+  <*  skipSpace
+  <*  ignoreRestOfLine
+  <*> parseModes
 
 parsePrimary :: Parser Bool
 parsePrimary = flag $ string "primary"
 
-parseModeNames :: Parser [(ModeName, Bool)]
-parseModeNames = many parseModeNameAndEnabled
+parseModes :: Parser Status
+parseModes = 
+  (maybe Disabled (defaultConfig . fst) . find snd) 
+  <$> many parseModeAndEnabled
 
-parseModeNameAndEnabled :: Parser (ModeName, Bool)
-parseModeNameAndEnabled = 
-     pure (,)
-  <* (many1 $ char ' ') 
-  <*> parseModeName
-  <* skipSpace
-  <* take 5
-  <*> (flag $ char '*')
-  <* ignoreRestOfLine
+defaultConfig :: Mode -> Status
+defaultConfig = Enabled . Config Normal
 
-parseModeName :: Parser ModeName
-parseModeName = 
+parseModeAndEnabled :: Parser (Mode, Bool)
+parseModeAndEnabled = 
+      pure (,)
+  <*  (many1 $ char ' ') 
+  <*> parseMode
+  <*  skipSpace
+  <*  take 5
+  <*> ((||) <$> (flag $ char '*') <*> (flag $ char '+'))
+  <*  ignoreRestOfLine
+
+parseMode :: Parser Mode
+parseMode = 
   (,)
   <$> parseNat 
   <* char 'x' 
@@ -208,34 +236,15 @@ inlinedOutputs f =
   maybe mempty makeCmd 
   . fmap (uncurry f) 
   . getPrimary 
-  . filterIsConnected
 
-getConnectedAndPrmiary = getPrimary . filterIsConnected
-
-filterIsConnected :: [OutputInfo] -> [OutputInfo]
-filterIsConnected = filter isConnected
-
-getPrimary :: [OutputInfo] -> Maybe (OutputInfo, [OutputInfo])
+getPrimary :: [OutputInfo] -> Maybe (Output, [Output])
 getPrimary xs = do
-  let (ps, nps) = partition isPrimary xs
+  let (ps, nps) = bimap (fmap outputInfo) (fmap outputInfo) $ partition isPrimary xs
   h <- listToMaybe ps
   return (h, nps ++ (tail ps))
 
-asExternal :: (Foldable f, Functor f) => Position -> OutputInfo -> f OutputInfo -> Outputs Output
-asExternal p = flip (asDir p . (fmap $ toOutput Normal)) . primary . (toOutput Normal) 
+asExternal :: (Foldable f, Functor f) => Position -> a -> f a -> Outputs a
+asExternal p = flip (asDir p) . primary 
 
 asDir :: (Foldable f) => Position -> f a -> Outputs a -> Outputs a
 asDir d = appEndo . foldMap (Endo . secondary d)
-
-toOutput :: Rotation -> OutputInfo -> Output
-toOutput r o = Output
-  { name = output o
-  , mode = mainMode (modeNames o)
-  , rotation = r
-  }
-
-mainMode :: [(ModeName, Bool)] -> Mode
-mainMode xs = defaultMode $ filter snd xs <|> xs
-
-defaultMode :: [(ModeName, Bool)] -> Mode
-defaultMode = maybe Disabled (ModeName . fst) . listToMaybe
