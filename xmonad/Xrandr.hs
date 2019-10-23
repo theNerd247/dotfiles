@@ -143,7 +143,7 @@ main =
     . parseXrandr 
 
 buildAndRun = 
-    runXrandr . inlinedOutputs (asExternal LeftOf)
+    runXrandr . inlinedOutputs (asExternal RightOf)
 
 runXrandr = shelly . run "xrandr"
 
