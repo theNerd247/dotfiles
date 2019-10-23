@@ -12,7 +12,7 @@ import Control.Arrow
 import Control.Applicative
 import Data.Attoparsec.Text
 import Data.Monoid
-import Data.List (partition, find)
+import Data.List (partition, find, sortOn)
 import Data.Functor.Foldable
 import Shelly (shelly, run, run_)
 import Data.Maybe (listToMaybe)
@@ -46,12 +46,12 @@ data Status =
     Disconnected
   | Disabled
   | Enabled Config
-  deriving (Show)
+  deriving (Show, Eq, Ord)
 
 data Config = Config
   { rotation :: Rotation
   , mode     :: Mode
-  } deriving (Show)
+  } deriving (Show, Eq, Ord)
 
 type Mode = (Natural, Natural)
 
@@ -60,7 +60,7 @@ data Rotation =
   | RotateLeft
   | RotateRight
   | Inverted
-  deriving (Show)
+  deriving (Show, Eq, Ord)
 
 type Cmd = [T.Text]
 
@@ -146,18 +146,6 @@ data OutputInfo = OutputInfo
 instance HasOutput OutputInfo where
   output = output . outputInfo
 
-main = readFile "out.txt" >>= either print buildAndRun . parseXrandr . T.pack
---   runXrandr []
---   >>= 
---     either print (buildAndRun >=> print)
---     . parseXrandr 
-
-buildAndRun = 
-    print . inlinedOutputs (asExternal LeftOf)
-
-runXrandr :: [T.Text] -> IO T.Text
-runXrandr = shelly . run "xrandr"
-
 parseXrandr = parseOnly $ parseOutputInfos
 
 parseOutputInfos :: Parser [OutputInfo]
@@ -232,19 +220,21 @@ parseNat = read <$> many1 digit
 ignoreRestOfLine :: Parser ()
 ignoreRestOfLine = takeTill isEndOfLine *> endOfLine
 
-inlinedOutputs f = 
-  maybe mempty makeCmd 
-  . fmap (uncurry f) 
-  . getPrimary 
+main = readFile "out.txt" >>= either print buildAndRun . parseXrandr . T.pack
+--   runXrandr []
+--   >>= 
+--     either print (buildAndRun >=> print)
+--     . parseXrandr 
 
-getPrimary :: [OutputInfo] -> Maybe (Output, [Output])
-getPrimary xs = do
-  let (ps, nps) = bimap (fmap outputInfo) (fmap outputInfo) $ partition isPrimary xs
-  h <- listToMaybe ps
-  return (h, nps ++ (tail ps))
+buildAndRun = print . sortOn (status . outputInfo)
+
+runXrandr :: [T.Text] -> IO T.Text
+runXrandr = shelly . run "xrandr"
 
 asExternal :: (Foldable f, Functor f) => Position -> a -> f a -> Outputs a
 asExternal p = flip (asDir p) . primary 
 
 asDir :: (Foldable f) => Position -> f a -> Outputs a -> Outputs a
 asDir d = appEndo . foldMap (Endo . secondary d)
+
+filterDisconnected = partition $ (==Disconnected) . status . outputInfo
