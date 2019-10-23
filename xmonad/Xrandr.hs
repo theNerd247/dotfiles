@@ -143,7 +143,7 @@ main =
     . parseXrandr 
 
 buildAndRun = 
-    runXrandr . inlinedOutputs (asExternal RightOf)
+    runXrandr . inlinedOutputs (asExternal LeftOf)
 
 runXrandr = shelly . run "xrandr"
 
@@ -235,4 +235,7 @@ toOutput r o = Output
   }
 
 mainMode :: [(ModeName, Bool)] -> Mode
-mainMode = maybe Disabled (ModeName . fst) . listToMaybe . filter snd
+mainMode xs = defaultMode $ filter snd xs <|> xs
+
+defaultMode :: [(ModeName, Bool)] -> Mode
+defaultMode = maybe Disabled (ModeName . fst) . listToMaybe
