@@ -40,7 +40,7 @@ data Output = Output
   , rotation :: Rotation
   } deriving (Show)
 
-type OutputName = String
+type OutputName = T.Text
 
 data Mode = 
     Disabled
@@ -56,48 +56,45 @@ data Rotation =
   | Inverted
   deriving (Show)
 
-type Cmd = String
+type Cmd = [T.Text]
 
 class ToCmd a where
   buildCmd :: a -> Cmd
 
 instance (ToCmd a) => ToCmd (Maybe a) where
-  buildCmd = maybe "" buildCmd
+  buildCmd = maybe [] buildCmd
 
 instance ToCmd Mode where
-  buildCmd Disabled = "--off"
-  buildCmd (ModeName m) = "--mode " <> buildCmd m
-
-instance (ToCmd a, ToCmd b) => ToCmd (a,b) where
-  buildCmd (x,y) = buildCmd x <> "x" <> buildCmd y
-
-instance ToCmd Natural where
-  buildCmd = show
-
-instance ToCmd Char where
-  buildCmd = return
+  buildCmd Disabled = pure "--off"
+  buildCmd (ModeName m) = ["--mode", asXrandrMode m]
+    where
+      asXrandrMode :: ModeName -> T.Text
+      asXrandrMode (x,y) = (T.pack . show $ x) <> "x" <> (T.pack . show $ y)
 
 instance (ToCmd a) => ToCmd [a] where
   buildCmd = foldMap buildCmd
 
 instance ToCmd Position where
-  buildCmd LeftOf  = "--left-of"
-  buildCmd RightOf = "--right-of"
-  buildCmd Above   = "--above"
-  buildCmd Below   = "--below"
-  buildCmd SameAs  = "--same-as"
+  buildCmd LeftOf  = pure "--left-of"
+  buildCmd RightOf = pure "--right-of"
+  buildCmd Above   = pure "--above"
+  buildCmd Below   = pure "--below"
+  buildCmd SameAs  = pure "--same-as"
 
 instance ToCmd Rotation where
-  buildCmd Normal      = "normal"
-  buildCmd RotateLeft  = "left"
-  buildCmd RotateRight = "right"
-  buildCmd Inverted    = "inverted"
+  buildCmd Normal      = pure "normal"
+  buildCmd RotateLeft  = pure "left"
+  buildCmd RotateRight = pure "right"
+  buildCmd Inverted    = pure "inverted"
 
 instance ToCmd Output where
   buildCmd Output{ name, mode, rotation} =
-    "--output " <> name
-    <> " " <> (buildCmd mode)
-    <> " --rotate " <> (buildCmd rotation)
+    [ "--output"
+    , name 
+    , "--rotate"
+    ] 
+    <> (buildCmd rotation)
+    <> (buildCmd mode)
 
 class HasOutput a where
   output :: a -> OutputName
@@ -119,12 +116,12 @@ leftOf = secondary LeftOf
 rightOf = secondary RightOf
 
 buildCmd' :: (ToCmd a, HasOutput a) => OutputsF a (Outputs a, Cmd) -> Cmd
-buildCmd' (Primary o) = (buildCmd o) <> " --primary"
+buildCmd' (Primary o) = buildCmd o <> ["--primary"]
 buildCmd' (Secondary p o (Fix os, cmds)) = 
   cmds 
-  <> " " <> (buildCmd o) 
-  <> " " <> (buildCmd p)
-  <> " " <> (output os)
+  <> (buildCmd o) 
+  <> (buildCmd p)
+  <> [output os]
 
 makeCmd :: (ToCmd a, HasOutput a) => Outputs a -> Cmd
 makeCmd = para buildCmd'
@@ -146,7 +143,7 @@ main =
     . parseXrandr 
 
 buildAndRun = 
-    runXrandr . (:[]) . T.pack . inlinedOutputs (asExternal LeftOf)
+    runXrandr . inlinedOutputs (asExternal LeftOf)
 
 runXrandr = shelly . run "xrandr"
 
@@ -168,7 +165,7 @@ parseOutputInfo =
   <*>  parseModeNames
 
 parseOutputName :: Parser OutputName
-parseOutputName = T.unpack <$> takeTill (==' ')
+parseOutputName = takeTill (==' ')
 
 parseConnected :: Parser Bool
 parseConnected = 
@@ -208,7 +205,7 @@ ignoreRestOfLine :: Parser ()
 ignoreRestOfLine = takeTill isEndOfLine *> endOfLine
 
 inlinedOutputs f = 
-  maybe "no primary display" makeCmd 
+  maybe mempty makeCmd 
   . fmap (uncurry f) 
   . getPrimary 
   . filterIsConnected
