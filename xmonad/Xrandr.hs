@@ -147,10 +147,10 @@ buildAndRun =
 
 runXrandr = shelly . run "xrandr"
 
-parseXrandr = parseOnly $ parseOutputInfos <* endOfInput
+parseXrandr = parseOnly $ parseOutputInfos
 
 parseOutputInfos :: Parser [OutputInfo]
-parseOutputInfos = string "Screen" *> ignoreRestOfLine *> many parseOutputInfo
+parseOutputInfos = ignoreRestOfLine *> many parseOutputInfo
 
 parseOutputInfo :: Parser OutputInfo
 parseOutputInfo = 
