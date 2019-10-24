@@ -20,12 +20,16 @@ import qualified Data.Text as T
 import Control.Monad ((>=>))
 import Data.Bifunctor (bimap)
 
-type Outputs a = Fix (OutputsF a)
-
-data OutputsF a b = 
-    Primary a
-  | Secondary Position a b
+-- | represents the physical layout of those screens which are connected
+data ScreensF b = 
+    NoScreens
+  | Disabled OutputName b
+  | Disconnected OutputName b
+  | Primary OutputName Config b
+  | Secondary OutputName Position Config b
   deriving (Show, Functor)
+
+type Screens = Fix ScreensF
 
 data Position =
     RightOf
@@ -35,18 +39,7 @@ data Position =
   | SameAs 
   deriving (Show)
 
-data Output = Output
-  { name     :: OutputName
-  , status   :: Status
-  } deriving (Show)
-
 type OutputName = T.Text
-
-data Status = 
-    Disconnected
-  | Disabled
-  | Enabled Config
-  deriving (Show, Eq, Ord)
 
 data Config = Config
   { rotation :: Rotation
@@ -83,10 +76,6 @@ instance ToCmd Output where
     ] 
     <> (buildCmd status)
 
-instance ToCmd Status where
-  buildCmd (Enabled m) = buildCmd m
-  buildCmd _ = ["--off"]
-
 instance ToCmd Config where
   buildCmd m = 
        (buildCmd . mode $ m)
@@ -101,6 +90,16 @@ rotateOption RotateLeft  = "left"
 rotateOption RotateRight = "right"
 rotateOption Inverted    = "inverted"
 
+buildCmd' :: (ToCmd a, HasOutput a) => ScreensF (Screens, Cmd) -> Cmd
+buildCmd' NoScreens                      = []
+buildCmd' Disconnected n (_, cmds)       = cmds <> (buildCmd n) <> ["--off"]
+buildCmd' Disabled n     (_, cmds)       = cmds <> (buildCmd n) <> ["--off"]
+buildCmd' (Primary o c   (_, cmds))      = cmds <> (buildCmd o) <> (buildCmd c) <> ["--primary"]
+buildCmd' (Secondary o p (Fix os, cmds)) = cmds <> (buildCmd o) <> (buildCmd p) <> [positionArg p, output os]
+
+makeCmd :: (ToCmd a, HasOutput a) => Screens -> Cmd
+makeCmd = para buildCmd'
+
 positionArg :: Position -> T.Text
 positionArg LeftOf  = "--left-of"
 positionArg RightOf = "--right-of"
@@ -114,7 +113,7 @@ class HasOutput a where
 instance HasOutput Output where
   output = name
 
-instance (HasOutput a) => HasOutput (OutputsF a b) where
+instance (HasOutput a) => HasOutput (ScreensF a b) where
   output (Primary o) = output o
   output (Secondary _ o _) = output o
 
@@ -127,17 +126,6 @@ secondary p x = Fix . (Secondary p x)
 leftOf = secondary LeftOf
 rightOf = secondary RightOf
 
-buildCmd' :: (ToCmd a, HasOutput a) => OutputsF a (Outputs a, Cmd) -> Cmd
-buildCmd' (Primary o) = buildCmd o <> ["--primary"]
-buildCmd' (Secondary p o (Fix os, cmds)) = 
-  cmds 
-  <> (buildCmd o) 
-  <> [positionArg p]
-  <> [output os]
-
-makeCmd :: (ToCmd a, HasOutput a) => Outputs a -> Cmd
-makeCmd = para buildCmd'
-
 data OutputInfo = OutputInfo
   { isPrimary  :: Bool
   , outputInfo :: Output
@@ -148,13 +136,10 @@ instance HasOutput OutputInfo where
 
 parseXrandr = parseOnly $ parseOutputInfos
 
-parseOutputInfos :: Parser [OutputInfo]
+parseOutputInfos :: Parser (Outputs Output)
 parseOutputInfos = ignoreRestOfLine *> many parseOutputInfo
 
-parseOutputInfo :: Parser OutputInfo
-parseOutputInfo = (uncurry OutputInfo) <$> parseOutput 
-
-parseOutput :: Parser (Bool, Output)
+parseOutput :: Parser (Outputs Output) 
 parseOutput = 
   (fmap . Output) 
   <$> parseOutputName 
@@ -164,10 +149,10 @@ parseOutput =
 parseOutputName :: Parser OutputName
 parseOutputName = takeTill (==' ')
 
-parseStatus :: Parser (Bool, Status)
+parseStatus :: Parser (ScreensF Status a)
 parseStatus = isDisconnected <|> isConnected
 
-isDisconnected :: Parser (Bool, Status)
+isDisconnected :: Parser (ScreensF Status a)
 isDisconnected = 
   pure (False, Disconnected) 
   <* string "disconnected"
@@ -236,5 +221,3 @@ asExternal p = flip (asDir p) . primary
 
 asDir :: (Foldable f) => Position -> f a -> Outputs a -> Outputs a
 asDir d = appEndo . foldMap (Endo . secondary d)
-
-filterDisconnected = partition $ (==Disconnected) . status . outputInfo
