@@ -108,6 +108,11 @@ modeX = fst . modeName
 
 modeY = snd . modeName
 
+primary a b = Fix $ Primary a b
+secondary a b c d = Fix $ Secondary a b c d
+disabled a b c = Fix $ Disabled a b c
+disconnected a b = Fix $ Disconnected a b
+
 makeCmd :: Screens -> Cmd
 makeCmd = para buildCmd'
 
@@ -156,49 +161,57 @@ main = undefined
 screenText :: Parser SC
 screenText = 
       isPrimary
-  <|> isSeconday
+  <|> isSecondary
   <|> isDisabled
   <|> isDisconnected
   
 isDisconnected :: Parser SC
 isDisconnected = 
-  ((Pre . Fix .) <$> Disconnected)
-  <$> outputNameText
-  <* skipSpace
-  <* string "disconnected"
-  <* ignoreRestOfLine
+  disconnected
+  <$> outputNameBefore "disconnected" (pure ())
 
 isPrimary :: Parser SC
-isPrimary = isConnected is
+isPrimary = 
+  primary
+  <$> isConnected (string "primary")
+  <*> preferredModeAnd enabled
 
-isSeconday :: Parser 
+isSecondary :: Parser SC
+isSecondary =
+  secondary
+  <$> isConnected (pure ())
+  <*> preferredModeAnd (not <$> enabled)
+  <*> (pure LeftOf)
 
-isConnected :: Parser Config -> Parser a -> Parser SC
-isConnected config primary =
-  ((Prim . Fix .) <$> Primary
-  <$> outputNameText
+isConnected :: Parser a -> ParserOutputName
+isConnected = outputNameBefore "connected"
+
+outputNameBefore :: T.Text -> Parser a -> Parser OutputName
+outputNameBefore connection primary =
+  outputNameText
   <* skipSpace
-  <* string "connected" 
+  <* string connection
   <* primary
   <* ignoreRestOfLine
-  <*> config
 
 outputNameText :: Parser OutputName
-outputNameText = takeTill (==' ')
+outputNameText = OutputName <$> takeTill (==' ')
 
+-- | Maybe it would be best to parse all the modes as (Mode, Bool, Bool)
+-- and then use pure functions to determine which one to pick as the preferred
+-- and whether that screen is enabled or not
+preferredModeAnd :: Parser Bool -> Parser Mode
+preferredModeAnd b = modeWith ((&&) <$> preferredModeText <*> b)
 
-
-modeWith :: Parser Bool -> Parser (Mode, Bool)
+modeWith :: Parser Bool -> Parser Mode
 modeWith p = 
       ((,))
   <*  (many1 $ char ' ') 
   <$> parseMode
   <*  skipSpace
   <*  take 5
-  <*> p
+  <*  p
   <*  ignoreRestOfLine
-
-preferredMode
 
 preferredModeText :: Parser Bool
 preferredModeText = flag $ char '+'
