@@ -1,63 +1,77 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-#go to our install directory
-BASEPATH="$1"
+set -euo pipefail
 
-if [[ -z $BASEPATH ]]; then
-	BASEPATH="$HOME"
-fi
+dry_run="false"
+hmBaseURL="https://github.com/rycee/home-manager/archive/"
 
-if [[ ! -e "$BASEPATH/.dotfiles" ]]; then
-	echo "$BASEPATH/.dotfiles doesn't exist!"
-	exit 1
-fi
+source ./_lib
 
-echo "installing system to: $BASEPATH"
-
-function getInstPath()
-{
-	echo "$BASEPATH/.$(basename $1)"
+nixpksVersion() {
+  echo "$nixpkgsVersion"
 }
 
-function lnk()
-{
-	if [[ -z $2 ]]; then
-		echo "couln't get install path"
-		exit 1
-	fi
-
-	instPath="$(getInstPath $2)"
-
-	echo "linking $BASEPATH/.dotfiles/$1 to $instPath"
-
-	rm -ri $instPath
-
-	ln -s -i "$BASEPATH/.dotfiles/$1" "$instPath"
+hmVersion() {
+  echo "release-$(nixpksVersion)"
 }
 
-function inst()
-{
-	instPath="$(getInstPath $1)"
-
-	echo "running install at $instPath"
-	cd "$instPath"
-	./install.sh
+onDarwin() {
+  uname -a | grep --quiet -i "darwin"
 }
 
+onNixOS() {
+  false;
+}
 
-#create the symbolic links to the config paths
+# install multi-user
+function installNix() {
+  if onDarwin; then
+    ./install-nix-catalina.sh
+  else
+    _log "installing multi-user nix"
+    _run "sh <(curl --location https://nixos.org/nix/install) --daemon"
+  fi 
+}
 
-#lnk astylerc
-lnk fonts fonts
-#lnk oh-my-zsh oh-my-zsh
-#lnk vimrc vim
-#lnk "vimrc/vimrc" vimrc
-#lnk xmobar/xmobarcc
-#lnk xmonad
-#lnk Xresources
-#lnk zshrc zshrc
-#lnk xinitrc
+installNixDarwin() {
+  if onDarwin; then
+    _log "you're on a mac installing nix-darwin..."
+    _run_optional "nix-build https://github.com/LnL7/nix-darwin/archive/master.tar.gz -A installer && ./result/bin/darwin-installer"
+  fi
+}
 
-#inst vim
-#inst oh-my-zsh
-inst fonts
+installHomeManager() {
+  if ! onDarwin && ! onNixOS; then
+    # Instructions from standalone installation from https://rycee.gitlab.io/home-manager/
+
+    mkdir -m 0755 -p "/nix/var/nix/{profiles,gcroots}/per-user/$USER"
+    nix-channel --add home-manager "${hmBaseURL}/$(hmVersion).tar.gz"
+    nix-channel --update
+
+    local shellExport="NIX_PATH=$HOME/.nix-defexpr/channels${NIX_PATH:+:}$NIX_PATH"
+
+    $shellExport nix-shell '<home-manager>' -A install
+
+    _log "Please add the following to your shell config:"
+    _log "$shellExport"
+  else
+    _log "Skipping home-manager install"
+  fi
+}
+
+installUserNixpkgs(){
+  local nixpkgsDir="$HOME/.nixpkgs"
+
+  if test -d $nixpkgsDir; then
+    echo "$nixpkgsDir already exists! Backing it up first..."
+
+    mv $nixpkgsDir "${nixpkgsDir}-backup"
+  fi
+
+  ln -sT ./nixpkgs $nixpkgsDir
+}
+
+# installNix \
+  installNixDarwin \
+  && installUserNixpkgs \
+  && installHomeManager \

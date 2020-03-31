@@ -1,0 +1,37 @@
+_log() {
+  local msg="$1"
+  echo "$msg" >&2
+}
+
+_error() {
+  local msg="$1"
+  _log "$msg"
+  exit 1
+}
+
+_run() {
+  local cmd="$1"
+  if [ "$dry_run" != "true" ]; then
+    eval "$cmd"
+  else
+    _log "$cmd (dry run)"
+  fi
+}
+
+_run_optional() {
+  local cmd="$1"
+  read -p "This step is optional. Would you like to skip? [yN] " -n 1 -r < /dev/tty
+  if echo "$REPLY" | grep --quiet --extended-regexp '^[Yy]$'; then
+    _log "Skipping"
+  else
+    _run "$cmd"
+    REPLY=""
+  fi
+}
+
+do_acquire_sudo() {
+  _log "Acquiring administrator privileges using 'sudo'"
+  _run "sudo true" \
+  || _error "Failed to acquire permissions"
+}
+
