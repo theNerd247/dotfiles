@@ -2,6 +2,10 @@
 
 {
 
+  home.sessionVariables = 
+    { EDITOR="vim";
+    };
+
   # Let Home Manager install and manage itself.
   programs.home-manager =
     { enable = true;
@@ -30,6 +34,8 @@
 
   programs.git =
   { enable = true;
+    userEmail = "noah.harvey247 gm";
+    userName  = "theNerd247";
     aliases = 
       { co   = "checkout";
         cm   = "checkout master";
