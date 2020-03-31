@@ -13,12 +13,17 @@
 
   programs.fish =
     { enable = true;
+      # NOTE: This is a hack and needs to be fixed
+      # see https://github.com/LnL7/nix-darwin/issues/122
       shellInit = ''
         for p in /run/current-system/sw/bin /Users/noah/.nix-profile/bin
           if not contains $p $fish_user_paths
             set -g fish_user_paths $p $fish_user_paths
           end
         end
+      '';
+      interactiveShellInit = ''
+        fish_vi_key_bindings
       '';
     };
 
