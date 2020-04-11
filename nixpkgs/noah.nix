@@ -70,7 +70,20 @@
         plugins = with pkgs.vimPlugins;
           [ fugitive
             easy-align
+            ghcid
           ];
       };
+
+      programs.neovim = 
+      { enable  = if pkgs.stdenv.isDarwin then false else true;
+        extraConfig = builtins.readFile ./init.vim;
+        plugins = with pkgs.vimPlugins;
+          [ fugitive
+            easy-align
+            ghcid
+          ];
+      };
+
     };
+
 }
