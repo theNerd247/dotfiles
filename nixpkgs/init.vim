@@ -22,7 +22,7 @@ syntax enable
 "use 16 colors
 set t_Co=16 
 colorscheme elflord
-set background=light
+set background=dark
 " show the commands as I type them
 set showcmd
 " don't wrap text by default
