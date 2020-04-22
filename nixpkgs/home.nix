@@ -10,7 +10,7 @@
     { enable = true;
     };
 
-  targets.genericLinux.enable = if pkgs.stdenv.isDarwin then false else true;
+  #targets.genericLinux.enable = if pkgs.stdenv.isDarwin then false else true;
 
 # TODO: make this work on darwin
 # programs.firefox = 
@@ -63,12 +63,12 @@
   }; 
 
   programs.vim = 
-  { enable  = true;
+  { enable  = pkgs.stdenv.isDarwin;
     extraConfig = builtins.readFile ./init.vim;
     plugins = with pkgs.vimPlugins;
-      [ fugitive
+      [ # fugitive
         easy-align
-        ghcid
+        # ghcid
       ];
   };
 
