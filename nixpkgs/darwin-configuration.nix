@@ -9,14 +9,7 @@
 # [ ] integrate nixos config (xmonad etc.)
 
 let
-  nixversion = "19.09";
   nixplatform = if pkgs.stdenv.isDarwin then "nix-darwin" else "nixos";
-
-  # use darwin config
-  home-manager = builtins.fetchGit {
-    url = "https://github.com/rycee/home-manager.git";
-    ref = "release-${nixversion}";
-  };
 
   fetchChannel = revAndSHA: 
     builtins.fetchTarball 
@@ -24,14 +17,27 @@ let
         url="https://github.com/NixOS/nixpkgs/archive/${revAndSHA.rev}.tar.gz"; 
       };
 
-  mkChannel = fetchChannel; #) { inherit config; };
-
-  pinnedPkgs = mkChannel
-    { rev = nixversion;
+  pinnedPkgs_1909 = 
+    { rev = "19.09";
       sha256 = "0mhqhq21y5vrr1f30qd2bvydv4bbbslvyzclhw0kdxmkgg3z4c92";
     };
 
-  pkgs = import pinnedPkgs { inherit config; };
+  pinnedPkgs_2003 =
+    { rev = "20.03";
+      sha256 = "0182ys095dfx02vl2a20j1hz92dx3mfgz2a6fhn31bqlp1wa8hlq";
+    };
+
+  pinnedPkgs = pinnedPkgs_2003;
+
+  nixversion = pinnedPkgs.rev;
+
+  # use darwin config
+  home-manager = builtins.fetchGit {
+    url = "https://github.com/rycee/home-manager.git";
+    ref = "release-${nixversion}";
+  };
+
+  pkgs = import (fetchChannel pinnedPkgs) { inherit config; };
 in
 
 {
