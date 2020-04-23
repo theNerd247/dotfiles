@@ -1,9 +1,25 @@
 { config, pkgs, ...}:
 
+let
+  neuronGit = builtins.fetchGit 
+  { url = "https://github.com/srid/neuron"; 
+    ref = "master"; 
+  };
+
+  neuron = import neuronGit 
+  { inherit pkgs;
+    gitRev = neuronGit.shortRev; 
+  };
+in
+
 {
   home.sessionVariables = 
     { EDITOR = if pkgs.stdenv.isDarwin then "vim" else "neovim";
     };
+
+  home.packages = 
+    [ neuron
+    ];
 
   # Let Home Manager install and manage itself.
   programs.home-manager =
