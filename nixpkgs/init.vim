@@ -45,6 +45,7 @@ set relativenumber
 set nosmartindent
 set nocindent
 set noautoindent
+set indentexpr=
 " turn off spell check
 set nospell
 " set the program to use for the S-K mapping
