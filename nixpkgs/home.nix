@@ -1,16 +1,32 @@
 { config, pkgs, ...}:
 
+let
+  neuronGit = builtins.fetchGit 
+  { url = "https://github.com/srid/neuron"; 
+    ref = "master"; 
+  };
+
+  neuron = import neuronGit 
+  { inherit pkgs;
+    gitRev = neuronGit.shortRev; 
+  };
+in
+
 {
   home.sessionVariables = 
     { EDITOR = if pkgs.stdenv.isDarwin then "vim" else "nvim";
     };
+
+  home.packages = 
+    [ neuron
+    ];
 
   # Let Home Manager install and manage itself.
   programs.home-manager =
     { enable = true;
     };
 
-  targets.genericLinux.enable = if pkgs.stdenv.isDarwin then false else true;
+  #targets.genericLinux.enable = if pkgs.stdenv.isDarwin then false else true;
 
 # TODO: make this work on darwin
 # programs.firefox = 
@@ -63,12 +79,12 @@
   }; 
 
   programs.vim = 
-  { enable  = true;
+  { enable  = pkgs.stdenv.isDarwin;
     extraConfig = builtins.readFile ./init.vim;
     plugins = with pkgs.vimPlugins;
-      [ fugitive
+      [ # fugitive
         easy-align
-        ghcid
+        # ghcid
       ];
   };
 

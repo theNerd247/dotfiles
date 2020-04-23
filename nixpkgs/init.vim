@@ -22,7 +22,7 @@ syntax enable
 "use 16 colors
 set t_Co=16 
 colorscheme elflord
-set background=dark
+set background=light
 " show the commands as I type them
 set showcmd
 " don't wrap text by default
@@ -43,6 +43,8 @@ set number
 set relativenumber
 " turn off smart indenting
 set nosmartindent
+set nocindent
+set noautoindent
 " turn off spell check
 set nospell
 " set the program to use for the S-K mapping
