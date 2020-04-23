@@ -139,3 +139,4 @@ noremap <leader>kp :set keymap=pollen
 vmap <leader>s y:%s/<C-r>"/
 nmap <leader>s, :s/, \{-}/\r,/g
 nmap <leader>me :read !grep "const .*=" %<cr>vap :s/^const \(.\{-}\) =.*$/, \1/g<cr>o}<ESC>{jr{
+nmap <leader>tt :set wrap<cr>:set linebreak<cr>:set showbreak=+++<cr>:set columns=73<cr>

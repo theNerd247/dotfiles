@@ -14,7 +14,7 @@ in
 
 {
   home.sessionVariables = 
-    { EDITOR = if pkgs.stdenv.isDarwin then "vim" else "neovim";
+    { EDITOR = if pkgs.stdenv.isDarwin then "vim" else "nvim";
     };
 
   home.packages = 
