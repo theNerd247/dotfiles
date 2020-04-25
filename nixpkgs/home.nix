@@ -1,24 +1,12 @@
 { config, pkgs, ...}:
 
-let
-  neuronGit = builtins.fetchGit 
-  { url = "https://github.com/srid/neuron"; 
-    ref = "master"; 
-  };
-
-  neuron = import neuronGit 
-  { inherit pkgs;
-    gitRev = neuronGit.shortRev; 
-  };
-in
-
 {
   home.sessionVariables = 
-    { EDITOR = if pkgs.stdenv.isDarwin then "vim" else "nvim";
+    { EDITOR = "vim";
     };
 
   home.packages = 
-    [ neuron
+    [ 
     ];
 
   # Let Home Manager install and manage itself.
@@ -66,7 +54,7 @@ in
   #home.stateVersion = builtins.trace config.nix.version config.nix.version;
 
   programs.git =
-  { enable = true;
+  { enable    = true;
     userEmail = "noah.harvey247 gm";
     userName  = "theNerd247";
     aliases = 
@@ -81,23 +69,23 @@ in
   }; 
 
   programs.vim = 
-  { enable  = pkgs.stdenv.isDarwin;
+  { enable      = true;
     extraConfig = builtins.readFile ./init.vim;
-    plugins = with pkgs.vimPlugins;
+    plugins     = with pkgs.vimPlugins;
       [ # fugitive
         easy-align
         # ghcid
       ];
   };
 
-  programs.neovim = 
-  { enable  = if pkgs.stdenv.isDarwin then false else true;
-    extraConfig = builtins.readFile ./init.vim;
-    plugins = with pkgs.vimPlugins;
-      [ fugitive
-        easy-align
-        ghcid
-      ];
-  };
+#  programs.neovim = 
+#  { enable  = if pkgs.stdenv.isDarwin then false else true;
+#    extraConfig = builtins.readFile ./init.vim;
+#    plugins = with pkgs.vimPlugins;
+#      [ fugitive
+#        easy-align
+#        ghcid
+#      ];
+#  };
 
 }
