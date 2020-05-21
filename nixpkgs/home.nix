@@ -5,8 +5,8 @@
     { EDITOR = "vim";
     };
 
-  home.packages = 
-    [ 
+  home.packages = with pkgs;
+    [ gitAndTools.gh 
     ];
 
   # Let Home Manager install and manage itself.
