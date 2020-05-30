@@ -1,8 +1,8 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# PatternGuards #-}
-{-# ExplicitForAll #-}
-{-# RankNTypes #-}
-{-# ScopedTypeVariables #-}
+{-# LANGUAGE PatternGuards #-}
+{-# LANGUAGE ExplicitForAll #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
 import Control.Applicative ((<$>),(<*>))

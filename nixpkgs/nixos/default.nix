@@ -13,6 +13,6 @@ in
     [ ./configuration.nix
     ];
 
-    nix.nixPath = [pkgs.nixpkgs];
+    nix.nixPath = ["nixpkgs=${pkgs.nixpkgs}"];
   };
 }).system

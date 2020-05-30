@@ -1,9 +1,11 @@
-{ config, pkgs, lib, ... }:
+let
+  nixpkgs = (import ./nixpkgs.nix).nixpkgs;
+in
 
 {
-#  imports = 
-#  [ <nixpkgs/nixos/modules/installer/virtualbox-demo.nix> 
-#  ];
+  imports = 
+  [ "${nixpkgs}/nixos/modules/installer/virtualbox-demo.nix"
+  ];
 
   # Let demo build as a trusted user.
   nix.trustedUsers = [ "demo" ];

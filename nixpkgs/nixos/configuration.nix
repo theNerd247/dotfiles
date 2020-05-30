@@ -6,11 +6,14 @@ in
 
 {
   imports = 
-  [ # ./vboxdemo.nix
-    (import "${nixpkgs.home-manager}/nixos")
-    (import ../noah.nix)
-    (import ./hardware.nix)
+  [ ./vboxdemo.nix 
+    "${nixpkgs.home-manager}/nixos"
+    ../noah.nix
+#    ./hardware.nix
   ];
+
+  boot.loader.grub.enable = true;
+  boot.loader.grub.version = 2;
   
   system.stateVersion = nixpkgs.version;
 
@@ -32,6 +35,8 @@ in
     { sddm.enable = true;
     };
 
+    #desktopManager.plasma5.enable = false;
+
     windowManager =
     { xmonad = 
       { enable = true;
@@ -43,6 +48,8 @@ in
 
   home-manager.useUserPackages = false;
   home-manager.useGlobalPkgs = true;
+
+  users.mutableUsers = false;
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
