@@ -1,3 +1,5 @@
+filetype indent off
+
 let g:netrw_banner=0        " disable annoying banner
 let g:netrw_browse_split=0  " horizontally split window
 " let g:netrw_altv=1          " open splits to the right
@@ -22,7 +24,7 @@ syntax enable
 "use 16 colors
 set t_Co=16 
 colorscheme elflord
-set background=light
+set background=dark
 " show the commands as I type them
 set showcmd
 " don't wrap text by default
@@ -119,24 +121,8 @@ nmap <leader>gd :!git diff <cr>
 nmap <leader>gr :!git checkout HEAD -- %<cr>L
 " open netrw
 nmap <leader>nw :Netrw<cr>
-" javascript class snippet
-nnoremap <leader>class :-1read $HOME/.config/nvim/snippets/js/newJsClass.js<cr>
-" javascript model
-nnoremap <leader>jsmodel :-1read $HOME/.config/nvim/snippets/js/expressModel.js<cr>:%s/X/
-" haskell LANGUAGE pragma
-nnoremap <leader>lang :-1read $HOME/.config/nvim/snippets/haskell/language.hs<cr>2f<space>
-nnoremap <leader>module :-1read $HOME/.config/nvim/snippets/haskell/module.hs<cr>2f<space>
-" merge multiple commit messages in a squash to a bulletted list
-nnoremap <leader>gm :%s/^\s\{-}\n\{-}#.*\n\{-}\s\{-}\n//g<cr>:%s/\n\n/\r/g<cr>{j<C-v>]]I* <Esc>
-" hoogle the current word
-noremap <leader>hg :!hoogle <C-R><C-W><cr>
 " vim grep current word
 noremap <leader>vg :vimgrep /\<<C-R><C-W>\>/ ./**<cr>
-" set keymap to haskell
-noremap <leader>kh :set keymap=haskell
-noremap <leader>kp :set keymap=pollen
 " replace currently highlighted text block with regex
 vmap <leader>s y:%s/<C-r>"/
 nmap <leader>s, :s/, \{-}/\r,/g
-nmap <leader>me :read !grep "const .*=" %<cr>vap :s/^const \(.\{-}\) =.*$/, \1/g<cr>o}<ESC>{jr{
-nmap <leader>tt :set wrap<cr>:set linebreak<cr>:set showbreak=+++<cr>:set columns=73<cr>

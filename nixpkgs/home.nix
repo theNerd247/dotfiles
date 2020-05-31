@@ -14,7 +14,7 @@
     { enable = true;
     };
 
-  #targets.genericLinux.enable = if pkgs.stdenv.isDarwin then false else true;
+  targets.genericLinux.enable = if pkgs.stdenv.isDarwin then false else true;
 
 # TODO: make this work on darwin
 # programs.firefox = 
