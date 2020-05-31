@@ -76,10 +76,10 @@ in
   # Create /etc/bashrc that loads the nix-darwin environment.
   # programs.bash.enable = true;
   # programs.zsh.enable = true;
-  programs.fish.enable = true;
+  programs.bash.enable = true;
 
   environment.shells = [
-    pkgs.fish
+    pkgs.bash
   ];
 
   # Used for backwards compatibility, please read the changelog before changing.

@@ -5,8 +5,8 @@
     { EDITOR = "vim";
     };
 
-  home.packages = 
-    [ 
+  home.packages = with pkgs;
+    [ gitAndTools.gh 
     ];
 
   # Let Home Manager install and manage itself.
@@ -17,13 +17,13 @@
   targets.genericLinux.enable = if pkgs.stdenv.isDarwin then false else true;
 
 # TODO: make this work on darwin
-# programs.firefox = 
-#   { enable = false;
-#      extensions = with pkgs.nur.repos.rycee.firefox-addons;
-#        [ adblocker-plus
-#          vim-vixen
-#        ];
-#   };
+  programs.firefox = 
+  { enable = true;
+    # extensions = with pkgs.nur.repos.rycee.firefox-addons;
+    #   [ adblocker-plus
+    #     vim-vixen
+    #   ];
+  };
 
   programs.bash.enable = true;
 
