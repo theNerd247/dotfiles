@@ -1,9 +1,11 @@
 let
-  pkgs = import (import ./nixpkgs.nix).nixpkgs 
+  nixpkgs = import ./nixpkgs.nix;
+
+  pkgs = import nixpkgs.nixpkgs 
   { overlays = 
     [ (import ./install-linux.nix)
     ];
   };
 in
-pkgs.deploy
-
+{ inherit (pkgs) deploy 
+}
