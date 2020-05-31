@@ -6,22 +6,24 @@ in
 
 {
   imports = 
-  [ ./hardware.nix
-    "${nixpkgs.home-manager}/nixos"
+  [ "${nixpkgs.home-manager}/nixos"
     ../noah.nix
+# ./hardware.nix
   ];
 
-  boot.loader.grub.enable = true;
-  boot.loader.grub.version = 2;
+  nixpkgs.overlays = 
+  [ (import ./install-linux.nix)
+  ];
+
   boot.loader.systemd-boot.enable = true;
   
   system.stateVersion = nixpkgs.version;
 
-  networking.networkmanager = 
-  { enable = true;
-    dns = "none";
-    insertNameservers = ["185.228.168.168"];
-  };
+  # networking.networkmanager = 
+  # { enable = true;
+  #   dns = "none";
+  #   insertNameservers = ["185.228.168.168"];
+  # };
 
   environment.systemPackages = with pkgs; [
     vim

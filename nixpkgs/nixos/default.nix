@@ -1,3 +1,5 @@
+{ imports ? [ ./configuration.nix ] }:
+
 let 
   pkgs = import ./nixpkgs.nix;
 
@@ -6,13 +8,10 @@ let
   nixos = import nixosPath; 
 in
 
-(nixos
+nixos
 { system = "x86_64-linux";
   configuration =
-  { imports =
-    [ ./configuration.nix
-    ];
-
+  { inherit imports;
     nix.nixPath = ["nixpkgs=${pkgs.nixpkgs}"];
   };
-}).system
+}
