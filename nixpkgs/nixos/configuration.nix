@@ -2,14 +2,18 @@
 
 let
   nixpkgs = import ./nixpkgs.nix;
+
+  hardwareConfig = 
+    if builtins.pathExists ./hardware-configuration.nix 
+    then [ ./hardware-configuration.nix ] 
+    else [];
 in
 
 {
   imports = 
   [ "${nixpkgs.home-manager}/nixos"
     ../noah.nix
-# ./hardware.nix
-  ];
+  ] ++ hardwareConfig;
 
   nixpkgs.overlays = 
   [ (import ./install-linux.nix)
