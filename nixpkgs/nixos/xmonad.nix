@@ -17,7 +17,7 @@
   };
 
   environment.systemPackages =  with pkgs;
-  [ xbacklight
+  [ xorg.xbacklight
     termite
     firefox
     zathura

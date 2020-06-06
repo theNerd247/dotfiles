@@ -16,7 +16,7 @@ in
 
 { imports = 
   [ "${nixpkgs.home-manager}/nixos"
-    ../noah.nix
+    ../noah
     ./xmonad.nix
   ] ++ hardwareConfig;
 
