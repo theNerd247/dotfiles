@@ -26,10 +26,9 @@ import qualified XMonad.Util.EZConfig as EZ
 modmask = mod4Mask
 
 -- default applications
-webbrowser = "google-chrome-stable"
+webbrowser = "firefox"
 
 -- remove the ncmpcpp toggle command as it's currently broken
-toggleSound = "amixer set Master toggle"
 term = "termite"
 pdfviewer = "zathura"
 
@@ -107,7 +106,8 @@ myLayoutHooks =
 myManageHooks = helpers <+> manageHook def
 
 helpers = composeOne
-  [ isFullscreen -?> doFullFloat --make fullscreen windows (as when watching a video) floating instead of tiled
+  [ isFullscreen -?> doFullFloat 
+  -- ^ make fullscreen windows (as when watching a video) floating instead of tiled
   , isDialog     -?> doCenterFloat
   ]
 
@@ -116,18 +116,6 @@ myEventHooks =
   EWMH.fullscreenEventHook
   <+> (handleEventHook def)
 
-
--- myXmobar = statusBar myXmobarCmd myXmobarPP toggleStrutsKey
---   where
---     myXmobarCmd = "xmobar -o ./xmobarcc"
---     myXmobarPP = xmobarPP 
---                   { ppCurrent = xmobarColor "#859900" "" . wrap "[" "]"
---                   , ppVisible = xmobarColor "#2aa198" "" . wrap "(" ")"
---                   , ppLayout = xmobarColor "#2aa198" ""
---                   , ppTitle = xmobarColor "#859900" "" . shorten 50
---                   }
---     toggleStrutsKey XConfig{modMask = modm} = (modm, xK_b)
-
 main = xmonad config
   where
     config = def 
@@ -135,7 +123,7 @@ main = xmonad config
       , handleEventHook = myEventHooks
       , layoutHook = myLayoutHooks
       , modMask = modmask
-      , terminal = "xterm"
+      , terminal = "termite"
       , normalBorderColor = unfocusBorder
       , focusedBorderColor = focusBorder
       }

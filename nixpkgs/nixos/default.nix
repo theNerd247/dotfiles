@@ -1,17 +1,15 @@
-{ imports ? [ ./configuration.nix ] }:
-
 let 
-  pkgs = import ./nixpkgs.nix;
+  nixpkgs = (import ./nixpkgs.nix).nixpkgs;
+  nixos = import "${nixpkgs}/nixos"; 
 
-  nixosPath = "${pkgs.nixpkgs}/nixos";
-
-  nixos = import nixosPath; 
+  defaultImports = [ ./configuration.nix ]; 
 in
+{ imports ? defaultImports }: 
 
 nixos
 { system = "x86_64-linux";
-  configuration =
+  configuration = 
   { inherit imports;
-    nix.nixPath = ["nixpkgs=${pkgs.nixpkgs}"];
+    nix.nixPath = ["nixpkgs=${nixpkgs}"];
   };
 }

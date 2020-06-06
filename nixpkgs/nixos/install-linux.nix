@@ -12,7 +12,7 @@ rec
       && ./result/bin/switch-to-configuration switch
   '';
 
-  insall-nix = writeScriptBin "install-nix" 
+  insall-nixos = writeScriptBin "install-nixos" 
   ''
     #!${bash}/bin/bash
     

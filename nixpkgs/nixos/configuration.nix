@@ -9,10 +9,10 @@ let
     else [];
 in
 
-{
-  imports = 
+{ imports = 
   [ "${nixpkgs.home-manager}/nixos"
     ../noah.nix
+    ./xmonad.nix
   ] ++ hardwareConfig;
 
   nixpkgs.overlays = 
@@ -23,40 +23,14 @@ in
   
   system.stateVersion = nixpkgs.version;
 
-  # networking.networkmanager = 
-  # { enable = true;
-  #   dns = "none";
-  #   insertNameservers = ["185.228.168.168"];
-  # };
-
-  environment.systemPackages = with pkgs; [
-    vim
-    git
-  ];
-
-  services.xserver = 
+  networking.networkmanager = 
   { enable = true;
-
-    displayManager = 
-    { sddm.enable = true;
-    };
-
-    #desktopManager.plasma5.enable = false;
-
-    windowManager =
-    { xmonad = 
-      { enable = true;
-        enableContribAndExtras = true;
-        config = builtins.readFile ./xmonad.hs;
-      };
-    };
+    dns = "none";
+    insertNameservers = ["185.228.168.168"];
   };
 
   home-manager.useUserPackages = false;
   home-manager.useGlobalPkgs = true;
 
   users.mutableUsers = false;
-
-  # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
 }
