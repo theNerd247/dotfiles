@@ -1,7 +1,8 @@
 { stdenv }: 
 
 stdenv.mkDerivation
-{ srcs = ./../..
+{ srcs = ./../..;
+  name = "dotfiles";
   installPhase = 
   '' mkdir -p $out/
     cp -r ./nixpkgs $out/nixpkgs

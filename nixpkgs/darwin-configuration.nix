@@ -43,7 +43,7 @@ in
 {
   imports = 
     [ (import "${home-manager}/nix-darwin") 
-      (import ./noah.nix)
+      ./noah
     ];
 
   # List packages installed in system profile. To search by name, run:

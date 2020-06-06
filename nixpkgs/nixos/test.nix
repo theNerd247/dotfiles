@@ -7,5 +7,5 @@ let
     ];
   };
 in
-{ inherit (pkgs) deploy 
-}
+
+pkgs.callPackage ./dotfiles.nix {}
