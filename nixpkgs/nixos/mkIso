@@ -4,5 +4,5 @@ set -e
 
 isoImage="$(nix-build --attr config.system.build.isoImage --no-out-link ./iso.nix --max-jobs auto --cores 2)"
 echo "Copying ${isoImage}"
-cp -r "${isoImage}/iso" ./iso
+cp -fr "${isoImage}/iso" ./iso
 chmod +w iso
