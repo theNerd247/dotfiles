@@ -1,6 +1,10 @@
 { config, pkgs, ...}:
 
 {
+  imports = 
+  [ ./diffconflicts.nix
+  ];
+
   home.sessionVariables = 
     { EDITOR = "vim";
     };
@@ -14,11 +18,11 @@
     { enable = true;
     };
 
-  targets.genericLinux.enable = if pkgs.stdenv.isDarwin then false else true;
+  #targets.genericLinux.enable = if pkgs.stdenv.isDarwin then false else true;
 
 # TODO: make this work on darwin
   programs.firefox = 
-  { enable = true;
+  { enable = ! pkgs.stdenv.isDarwin;
     # extensions = with pkgs.nur.repos.rycee.firefox-addons;
     #   [ adblocker-plus
     #     vim-vixen
