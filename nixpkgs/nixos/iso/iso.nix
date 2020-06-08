@@ -1,6 +1,6 @@
 let
-  nixpkgs = (import ./nixpkgs.nix).nixpkgs;
-  nixos = import ./default.nix;
+  nixpkgs = (import ../nixpkgs.nix).nixpkgs;
+  nixos = import ../default.nix;
   cfg = 
   { lib, ...}:  with lib;
 
@@ -15,7 +15,7 @@ in
 nixos
 { imports = 
   [ "${nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-base.nix"
-    ./configuration.nix
+    ../configuration.nix
     cfg
   ];
 }

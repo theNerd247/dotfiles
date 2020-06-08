@@ -1,7 +1,7 @@
 { stdenv }: 
 
 stdenv.mkDerivation
-{ srcs = builtins.filterSource (path: type: baseNameOf path != "iso" ) ./../..;
+{ srcs = builtins.filterSource (path: type: baseNameOf path != "result" ) ./../../..;
   name = "dotfiles";
   installPhase = 
   '' mkdir -p $out/
