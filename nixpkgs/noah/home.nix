@@ -29,7 +29,9 @@
     #   ];
   };
 
-  programs.bash.enable = true;
+  programs.bash = 
+  { enable = true;
+  };
 
 #  programs.fish =
 #    { enable = true;
@@ -69,7 +71,9 @@
         rbi  = "rebase -i";
         lgga = "log --graph --decorate --oneline --all";
         st   = "status";
+        bd   = "diff $(git merge-base HEAD) HEAD";
       };
+
   }; 
 
   programs.vim = 
