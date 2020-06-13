@@ -1,10 +1,3 @@
 #!/usr/bin/env bash
 
-set -e
-
-mkdir -p result
-
-isoImage="$(nix-build --attr config.system.build.isoImage --no-out-link ./iso.nix --max-jobs auto --cores 2)"
-echo "Copying ${isoImage}"
-cp -fr "${isoImage}/iso/*.iso" ./result/
-chmod +w result/*.iso
+nix-build --attr config.system.build.isoImage ./iso.nix --max-jobs auto --cores 2 --show-trace

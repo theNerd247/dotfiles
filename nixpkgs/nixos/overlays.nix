@@ -1,20 +1,23 @@
 self: super: 
 
-with { inherit (super) writeScriptBin parted bash util-linux; };
+with { inherit (super) writeScriptBin parted bash utillinux noah-dotfiles; };
 
 rec
 { deploy = writeScriptBin "deploy" 
   ''
     #!${bash}/bin/bash
-    nixos-generate-config --show-hardware-config > ./hardware-configuration.nix \
+      cd ./etc/nixos \
+      && nixos-generate-config --show-hardware-config > ./hardware-configuration.nix \
       && nix-build --attr system ./default.nix --show-trace \
       && nix-env --profile /nix/var/nix/profiles/system --set ./result \
       && ./result/bin/switch-to-configuration switch
   '';
 
-  insall-nixos = writeScriptBin "install-nixos" 
+  install-nixos = writeScriptBin "install-nixos" 
   ''
     #!${bash}/bin/bash
+
+    set -xe
     
     function partitionDisks() {
       ${parted}/bin/parted /dev/sda -- mklabel gpt
@@ -26,19 +29,19 @@ rec
     
     function formatFileSystem() {
     
-      ${util-linux}/bin/mkfs.ext4 -L nixos /dev/sda1
+      ${utillinux}/bin/mkfs.ext4 -L nixos /dev/sda1
     
-      ${util-linux}/bin/mkswap -L swap /dev/sda2
+      ${utillinux}/bin/mkswap -L swap /dev/sda2
     
-      ${util-linux}/bin/swapon /dev/sda2
+      ${utillinux}/bin/swapon /dev/sda2
     
-      ${util-linux}/bin/mkfs.fat -F 32 -n boot /dev/sda3        # (for UEFI systems only)
+      ${utillinux}/bin/mkfs.fat -F 32 -n boot /dev/sda3        # (for UEFI systems only)
     
-      ${util-linux}/bin/mount /dev/disk/by-label/nixos /mnt
+      ${utillinux}/bin/mount /dev/disk/by-label/nixos /mnt
     
       mkdir -p /mnt/boot                      # (for UEFI systems only)
     
-      ${util-linux}/bin/mount /dev/disk/by-label/boot /mnt/boot # (for UEFI systems only)
+      ${utillinux}/bin/mount /dev/disk/by-label/boot /mnt/boot # (for UEFI systems only)
     }
     
     partitionDisks

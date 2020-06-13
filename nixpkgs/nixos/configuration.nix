@@ -20,6 +20,10 @@ in
   [ (import ./overlays.nix)
   ];
 
+  environment.systemPackages = with pkgs;
+  [ install-nixos
+  ];
+
   boot.loader.systemd-boot.enable = true;
   
   system.stateVersion = nixpkgs.version;

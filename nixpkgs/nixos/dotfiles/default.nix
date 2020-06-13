@@ -1,12 +1,12 @@
-{ pkgs }:
+{ pkgs, ... }:
 
 { nixpkgs.overlays =
-  [ (self: super: self.callPackage ./dotfiles.nix {};
+  [ (self: super: { noah-dotfiles = super.callPackage ./dotfiles.nix {}; })
   ];
 
   environment.etc.nixpkgs =
-  { enabled = true;
-    target  = "nixos/";
+  { enable  = true;
+    target  = "nixos";
     source  = pkgs.dotfiles;
     mode    = "660";
   };
