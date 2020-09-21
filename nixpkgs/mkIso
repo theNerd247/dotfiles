@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-nix-build --attr "$1" ./nixos --max-jobs auto --cores 2 --show-trace
+/nix/var/nix/profiles/default/bin/nix-build --attr "$1" ./nixos --max-jobs auto --cores 2 --show-trace
