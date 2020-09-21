@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-nix-build --attr config.system.build.isoImage ./iso.nix --max-jobs auto --cores 2 --show-trace

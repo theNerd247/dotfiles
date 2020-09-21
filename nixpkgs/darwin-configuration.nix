@@ -1,23 +1,7 @@
 { config, ... }:
 
-# TODO:
-# [ ] fix hack where fish path puts user profile before system path
-# [ ] make vim config more system dependent 
-# [ ] refactor vim config for plugins
-# [ ] add installing custom fish functions
-# [ ] finish platform independent script for installing nix-darwin etc.
-# [ ] integrate nixos config (xmonad etc.)
-
-let
-  nixplatform = if pkgs.stdenv.isDarwin then "nix-darwin" else "nixos";
-
-
-
-in
-
-{
-  imports = 
-    [ (import "${home-manager}/nix-darwin") 
+{ imports = 
+    [ ./home-manager
       ./noah
     ];
 
@@ -34,19 +18,6 @@ in
 
   #nix.package = pinnedPkgs;
   nix.nixPath = "https://github.com/NixOS/nixpkgs/archive/${nixversion}.tar.gz";
-
-  nix.extraOptions = ''
-    build-users-group = nixbld
-    system-features = benchmark big-parallel local nixos-test
-  '';
-
-  nix.binaryCaches = [
-    "http://hydra.mv.awakenetworks.net:5000"
-  ];
-
-  nix.binaryCachePublicKeys = [
-    "hydra.mv.awakenetworks.net:ZfTJ89M1N5ndpH8wJBsMzmiZ20d29oHN8ql/X63NQC8="
-  ];
 
   # Create /etc/bashrc that loads the nix-darwin environment.
   # programs.bash.enable = true;
@@ -69,5 +40,4 @@ in
   nix.maxJobs = if pkgs.stdenv.isDarwin then 10 else 1;
   nix.buildCores = if pkgs.stdenv.isDarwin then 10 else 1;
 
-  home-manager.useUserPackages = false;
 }

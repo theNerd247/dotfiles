@@ -1,53 +1,31 @@
-{ config, pkgs, ...}:
+{ pkgs, ...}:
 
-{
-  imports = 
-  [ ./diffconflicts.nix
-  ];
+{ 
 
   home.sessionVariables = 
     { EDITOR = "vim";
     };
 
-  home.packages = with pkgs;
-    [ gitAndTools.gh 
-    ];
+  # home.packages = with pkgs;
+  #   [ #gitAndTools.gh 
+  #   ];
+
+  programs.kakoune =
+    { enable = true;
+    };
 
   # Let Home Manager install and manage itself.
   programs.home-manager =
     { enable = true;
     };
 
-  #targets.genericLinux.enable = if pkgs.stdenv.isDarwin then false else true;
-
-# TODO: make this work on darwin
   programs.firefox = 
   { enable = ! pkgs.stdenv.isDarwin;
-    # extensions = with pkgs.nur.repos.rycee.firefox-addons;
-    #   [ adblocker-plus
-    #     vim-vixen
-    #   ];
   };
 
   programs.bash = 
   { enable = true;
   };
-
-#  programs.fish =
-#    { enable = true;
-#      # NOTE: This is a hack and needs to be fixed
-#      # see https://github.com/LnL7/nix-darwin/issues/122
-#      shellInit = ''
-#        for p in /run/current-system/sw/bin /Users/noah/.nix-profile/bin
-#          if not contains $p $fish_user_paths
-#            set -g fish_user_paths $p $fish_user_paths
-#          end
-#        end
-#      '';
-#      interactiveShellInit = ''
-#        fish_vi_key_bindings
-#      '';
-#    };
 
   # This value determines the Home Manager release that your
   # configuration is compatible with. This helps avoid breakage
@@ -71,7 +49,6 @@
         rbi  = "rebase -i";
         lgga = "log --graph --decorate --oneline --all";
         st   = "status";
-        bd   = "diff $(git merge-base HEAD) HEAD";
       };
 
   }; 
@@ -80,20 +57,9 @@
   { enable      = true;
     extraConfig = builtins.readFile ./init.vim;
     plugins     = with pkgs.vimPlugins;
-      [ # fugitive
+      [ 
         easy-align
-        # ghcid
       ];
   };
-
-#  programs.neovim = 
-#  { enable  = if pkgs.stdenv.isDarwin then false else true;
-#    extraConfig = builtins.readFile ./init.vim;
-#    plugins = with pkgs.vimPlugins;
-#      [ fugitive
-#        easy-align
-#        ghcid
-#      ];
-#  };
 
 }

@@ -1,5 +1,3 @@
-filetype indent off
-
 let g:netrw_banner=0        " disable annoying banner
 let g:netrw_browse_split=0  " horizontally split window
 " let g:netrw_altv=1          " open splits to the right
@@ -19,7 +17,7 @@ xmap ga <Plug>(EasyAlign)
 nmap ga <Plug>(EasyAlign)
 
 " I like syntax highlighting
-syntax enable
+" syntax enable
 " set custom colors
 "use 16 colors
 set t_Co=16 
