@@ -6,7 +6,7 @@ self: super:
   # && nix-build --attr system ${../nixos/default.nix} --show-trace \
   # && nix-env --profile /nix/var/nix/profiles/system --set ./result \
   # && ./result/bin/switch-to-configuration switch
-  install-nixos = { buildInputs = with self; [ parted utillinux git ]; } // (super.writeScriptBin "install-nixos" 
+  install-nixos = (super.writeScriptBin "install-nixos" 
   ''
     #!${self.bash}/bin/bash
 
@@ -22,11 +22,11 @@ self: super:
     fi
 
     function partitionDisks() {
-      ${self.parted}/bin/parted installDev -- mklabel gpt
-      ${self.parted}/bin/parted installDev -- mkpart primary 512MiB -4GiB
-      ${self.parted}/bin/parted installDev -- mkpart primary linux-swap -4GiB 100%
-      ${self.parted}/bin/parted installDev -- mkpart ESP fat32 1MiB 512MiB
-      ${self.parted}/bin/parted installDev -- set 3 boot on
+      ${self.parted}/bin/parted ''${installDev} -- mklabel gpt
+      ${self.parted}/bin/parted ''${installDev} -- mkpart primary 512MiB -4GiB
+      ${self.parted}/bin/parted ''${installDev} -- mkpart primary linux-swap -4GiB 100%
+      ${self.parted}/bin/parted ''${installDev} -- mkpart ESP fat32 1MiB 512MiB
+      ${self.parted}/bin/parted ''${installDev} -- set 3 boot on
     }
     
     function formatFileSystem() {
@@ -44,6 +44,6 @@ self: super:
     
     partitionDisks \
     && formatFileSystem \
-    && ${super.install-nhdotfiles}/bin/install-nhdotfiles $mntPoint 
-  '');
+    && ${self.install-nhdotfiles}/bin/install-nhdotfiles $mntPoint 
+  '').overrideAttrs (x: x // { buildInputs = with self; [ parted utillinux install-nhdotfiles ]; });
 }

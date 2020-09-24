@@ -2,7 +2,7 @@ self: super:
 
 rec
 {
-  install-nhdotfiles = super.writeScriptBin "install-nhdotfiles"
+  install-nhdotfiles = (super.writeScriptBin "install-nhdotfiles"
     ''
     #!${self.bash}/bin/bash
 
@@ -12,7 +12,7 @@ rec
     && cd $installPath \
     && nixos-generate-config --show-hardware-config > ./hardware-configuration.nix \
     && NIX_PATH="${builtins.concatStringsSep ":" nhdotfiles.nixPath}" nixos-rebuild switch
-    '';
+    '').overrideAttrs (x: x // { buildInputs = [ super.bash super.git nhdotfiles ]; });
 
   nhdotfiles = super.stdenv.mkDerivation
     rec
