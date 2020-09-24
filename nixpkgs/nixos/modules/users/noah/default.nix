@@ -4,10 +4,9 @@
     { home  = "/home/noah";
       shell = pkgs.bash;
       createHome = true;
-      extraGroups = [ "wheel" ]; 
+      extraGroups = [ "wheel" "networkmanager" ]; 
       initialHashedPassword = 
-        pkgs.lib.strings.escapeNixString
-        "$6$4L//aDSh4X2T62c$4fzzfUYmW.Uav8cY8kLA9uNtCunzoQEh8lU8tsqVbwPubqba6Sj4WNGRWSH7zTclMCddJCe.Z7aTvWrdAv0vn1";
+        "\$6\$h1CYjiaf3P7U5Fp\$/FEjtPGMggPBqxOybq5GgxHVeHGgdEfs.jz0lwTaBNiosm1a.C3BecujGebgDi1D2MhTCTqPn9vYk5MYcYwSP.";
     };
 
   home-manager.users.noah = import ./home.nix;

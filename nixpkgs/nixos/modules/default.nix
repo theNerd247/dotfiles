@@ -12,29 +12,27 @@ in
     ./users/noah
     ./homeManager.nix
     ./xmonad
-  ]; 
-  #++ hardwareConfig;
-  #hardwareConfig;
+    ./touchpad.nix
+  ] 
+  ++ hardwareConfig;
 
-  services.mingetty.autologinUser = lib.mkForce null;
-
-  # environment.systemPackages = with pkgs;
-  # [ install-nixos
-  # ];
+  environment.systemPackages = with pkgs;
+  [ 
+    install-nixos
+    git
+  ];
 
   boot.loader.systemd-boot.enable = true;
   
-  #system.stateVersion = pkgs.nixpkgsVersion;
+  system.stateVersion = pkgs.nixpkgsVersion;
 
   networking = 
   { networkmanager = 
     { enable = true;
-      dns = "none";
-      insertNameservers = ["185.228.168.168" "185.228.169.168"];
     };
 
     wireless.enable = lib.mkForce false;
   };
 
-  users.mutableUsers = false;
+  users.mutableUsers = true;
 }

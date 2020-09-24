@@ -3,5 +3,6 @@ import ./nixpkgs.nix
   [ 
     (import ./install-nixos.nix)
     (import ./movie-screen.nix)
+    (import ./nhdotfiles.nix)
   ];
 }

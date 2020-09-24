@@ -1,8 +1,9 @@
 { pkgs, ... }:
 
 { environment.etc.nhdotfiles =
-  { enable  = true;
-    target  = "nixos";
+  { 
+    enable  = true;
+    target  = "nhdotfiles";
     source  = pkgs.nhdotfiles;
     mode    = "660";
   };

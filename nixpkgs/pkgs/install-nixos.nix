@@ -6,8 +6,8 @@ let
     #!${self.bash}/bin/bash
 
     cd ./etc/nixos \
-    && nixos-generate-config --show-hardware-config > ./hardware-configuration.nix \
-    && nix-build --attr system ./default.nix --show-trace \
+    && nixos-generate-config --show-hardware-config > ${./hardware-configuration.nix} \
+    && nix-build --attr system ${./default.nix} --show-trace \
     && nix-env --profile /nix/var/nix/profiles/system --set ./result \
     && ./result/bin/switch-to-configuration switch
   '';
