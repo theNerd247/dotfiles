@@ -1,17 +1,11 @@
 self: super:
 
-let
-  deploy = super.writeScriptBin "deploy" 
-  ''
-    #!${self.bash}/bin/bash
+{
 
-    cd ./etc/nixos \
-    && nixos-generate-config --show-hardware-config > ${./hardware-configuration.nix} \
-    && nix-build --attr system ${./default.nix} --show-trace \
-    && nix-env --profile /nix/var/nix/profiles/system --set ./result \
-    && ./result/bin/switch-to-configuration switch
-  '';
-
+  # This is how to manually deploy the system...
+  # && nix-build --attr system ${../nixos/default.nix} --show-trace \
+  # && nix-env --profile /nix/var/nix/profiles/system --set ./result \
+  # && ./result/bin/switch-to-configuration switch
   install-nixos = super.writeScriptBin "install-nixos" 
   ''
     #!${self.bash}/bin/bash
@@ -20,8 +14,8 @@ let
     
     function partitionDisks() {
       ${self.parted}/bin/parted /dev/sda -- mklabel gpt
-      ${self.parted}/bin/parted /dev/sda -- mkpart primary 512MiB -8GiB
-      ${self.parted}/bin/parted /dev/sda -- mkpart primary linux-swap -8GiB 100%
+      ${self.parted}/bin/parted /dev/sda -- mkpart primary 512MiB -4GiB
+      ${self.parted}/bin/parted /dev/sda -- mkpart primary linux-swap -4GiB 100%
       ${self.parted}/bin/parted /dev/sda -- mkpart ESP fat32 1MiB 512MiB
       ${self.parted}/bin/parted /dev/sda -- set 3 boot on
     }
@@ -39,15 +33,11 @@ let
       ${self.utillinux}/bin/mount /dev/disk/by-label/boot /mnt/boot # (for UEFI systems only)
     }
     
-    partitionDisks
-    formatFileSystem
-    pushd /mnt
-    ${deploy}/bin/deploy
+    partitionDisks \
+    && formatFileSystem \
+    && pushd /mnt \
+    && nixos-generate-config --show-hardware-config > ./hardware-configuration.nix \
+    && ${self.nhdotfiles}/bin/install
+    && nixos-rebuild switch
   '';
-in
-
-{ install-nixos = super.symlinkJoin 
-  { name = "install-linux";
-    paths = [ install-nixos deploy ];
-  };
 }

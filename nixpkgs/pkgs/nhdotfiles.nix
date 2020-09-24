@@ -4,10 +4,9 @@ self: super:
     { srcs = builtins.filterSource (path: type: baseNameOf path != "result" ) ./../..;
       name = "nhdotfiles";
       installPhase = 
-      '' mkdir -p $out/
-        cp -r ./nixpkgs $out/nixpkgs
-        cp -r .git $out/.git
-        cp -r .gitignore $out/.gitignore
+      '' mkdir -p $out
+
+        install --group=wheel --mode=770 -D ./bin/install $out/bin/install
       '';
     };
 }
