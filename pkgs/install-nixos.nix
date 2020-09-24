@@ -6,38 +6,44 @@ self: super:
   # && nix-build --attr system ${../nixos/default.nix} --show-trace \
   # && nix-env --profile /nix/var/nix/profiles/system --set ./result \
   # && ./result/bin/switch-to-configuration switch
-  install-nixos = super.writeScriptBin "install-nixos" 
+  install-nixos = { buildInputs = with self; [ parted utillinux git ]; } // (super.writeScriptBin "install-nixos" 
   ''
     #!${self.bash}/bin/bash
 
     set -xe
-    
+
+    installDev="$1"
+
+    mntPoint=/mnt
+
+    if [[ -z "$installDev" ]]; then 
+      echo "install device required (e.g /dev/sda) as first argument"
+      exit 1
+    fi
+
     function partitionDisks() {
-      ${self.parted}/bin/parted /dev/sda -- mklabel gpt
-      ${self.parted}/bin/parted /dev/sda -- mkpart primary 512MiB -4GiB
-      ${self.parted}/bin/parted /dev/sda -- mkpart primary linux-swap -4GiB 100%
-      ${self.parted}/bin/parted /dev/sda -- mkpart ESP fat32 1MiB 512MiB
-      ${self.parted}/bin/parted /dev/sda -- set 3 boot on
+      ${self.parted}/bin/parted installDev -- mklabel gpt
+      ${self.parted}/bin/parted installDev -- mkpart primary 512MiB -4GiB
+      ${self.parted}/bin/parted installDev -- mkpart primary linux-swap -4GiB 100%
+      ${self.parted}/bin/parted installDev -- mkpart ESP fat32 1MiB 512MiB
+      ${self.parted}/bin/parted installDev -- set 3 boot on
     }
     
     function formatFileSystem() {
     
-      ${self.utillinux}/bin/mkfs.ext4 -L nixos /dev/sda1
-      ${self.utillinux}/bin/mkswap -L swap /dev/sda2
-      ${self.utillinux}/bin/swapon /dev/sda2
-      ${self.utillinux}/bin/mkfs.fat -F 32 -n boot /dev/sda3        # (for UEFI systems only)
-      ${self.utillinux}/bin/mount /dev/disk/by-label/nixos /mnt
+      ${self.utillinux}/bin/mkfs.ext4 -L nixos ''${installDev}1
+      ${self.utillinux}/bin/mkswap -L swap ''${installDev}2
+      ${self.utillinux}/bin/swapon ''${installDev}2
+      ${self.utillinux}/bin/mkfs.fat -F 32 -n boot ''${installDev}3        # (for UEFI systems only)
+      ${self.utillinux}/bin/mount /dev/disk/by-label/nixos $mntPoint
     
-      mkdir -p /mnt/boot                      # (for UEFI systems only)
+      mkdir -p ''${mntPoint}/boot                      # (for UEFI systems only)
     
-      ${self.utillinux}/bin/mount /dev/disk/by-label/boot /mnt/boot # (for UEFI systems only)
+      ${self.utillinux}/bin/mount /dev/disk/by-label/boot ''${mntPoint}/boot # (for UEFI systems only)
     }
     
     partitionDisks \
     && formatFileSystem \
-    && pushd /mnt \
-    && nixos-generate-config --show-hardware-config > ./hardware-configuration.nix \
-    && ${self.nhdotfiles}/bin/install
-    && nixos-rebuild switch
-  '';
+    && ${super.install-nhdotfiles}/bin/install-nhdotfiles $mntPoint 
+  '');
 }
